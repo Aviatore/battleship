@@ -3,12 +3,34 @@ import copy
 
 def board_init(size):
     """Initilizes a board of custom size."""
-    pass
+    board = []
+    for row in range(size):
+        board.append(('0 '*size).split(' ')[:-1])
+    return board
 
 
 def print_board(board):
     """Prints board to the screen during the placement phase."""
-    pass
+    row_len = len(board[0])
+    col_len = len(board)
+    rows_template = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I']
+    cols = []
+    
+    for col_index in range(col_len):
+        cols.append(col_index + 1)
+        
+    cols_str = list(map(str, cols))
+    rows = []
+    
+    for row_index in range(row_len):
+        rows.append(rows_template[row_index])
+  
+    print(" ", " ".join(cols_str))
+    
+    for index in range(col_len):
+        print(f"{rows[index]} {' '.join(board[index])}")
+        
+    print("")
 
 
 def print_boards(board1, board2):
@@ -90,6 +112,9 @@ def main():
     board_size = 9
     board1 = board_init(board_size)
     board2 = board_init(board_size)
+    
+    print_board(board1)
+    exit()
     
     # Declaration of ship types. The lists contain two values:
     # - first, corresponds to the ship's size
