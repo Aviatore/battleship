@@ -90,7 +90,87 @@ def place_ship(board, player, ship_stats, ships):
     """Controls the placement phase.
        Asks the player for coordinates, ship type and direction (h - horizontal or v - vertical), e.g. b2 cruiser h.
        """
-    pass
+    board_size = len(board)
+    ROW = 0
+    COL = 1
+    SHIP = 1
+    DIRECTION = 2
+    LEFT, DOWN = [-1, -1]
+    RIGHT, UP = [1, 1]
+    STAY = 0
+    
+    row_len = len(board[0])
+    col_len = len(board)
+    rows_template = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I']
+    cols = []
+    for col_index in range(col_len):
+        cols.append(col_index + 1)
+    cols_str = list(map(str, cols))
+    rows = []
+    for row_index in range(row_len):
+        rows.append(rows_template[row_index])
+
+    user_input = None
+    msg = ""
+    while user_input is None:
+        print(msg)
+        msg = ""
+        user_input = input(f"{player['name']}, please give coordinates: ")
+        user_input_list = user_input.split(" ")
+        if user_input_list[0] == 'quit':
+            print("Good bye!")
+            exit()
+        elif len(user_input_list) != 3:
+            user_input = None
+            continue
+        elif user_input_list[0][ROW].upper() not in rows or user_input_list[0][COL] not in cols_str:
+            user_input = None
+            continue
+        elif user_input_list[SHIP] not in ['carrier', 'battleship', 'cruiser', 'destroyer']:
+            user_input = None
+            continue
+        elif user_input_list[DIRECTION] not in ['h', 'v']:
+            user_input = None
+            continue
+        else:
+            row = rows.index(user_input_list[0][ROW].upper())
+            col = cols.index(int(user_input_list[0][COL]))
+        
+        dirs_row = [STAY, UP, DOWN, STAY]
+        dirs_col = [LEFT, STAY, STAY, RIGHT]
+        dirs = list(zip(dirs_row, dirs_col))
+        
+        if user_input_list[DIRECTION] == 'h':
+            
+            for col_index in range(col - 1, col + ships[user_input_list[SHIP]][0]):
+                if col_index < 0:
+                    continue
+                elif col_index > board_size - 1:
+                    print("Edge")
+                    user_input = None
+                    break
+
+                if board[row][col_index] != '0':
+                    msg = "Ships are too close!"
+                    user_input = None
+                    break
+                
+                if col <= col_index <= col + ships[user_input_list[SHIP]][0]:
+                    for i in [-1, 1]:
+                        if 0 <= row + i <= board_size - 1:
+                            if board[row + i][col_index] != '0':
+                                msg = "Ships are too close!"
+                                user_input = None
+                                break
+                    else:
+                        break
+            if user_input is not None:
+                coords = []
+                for i in range(ships[user_input_list[SHIP]][0]):
+                    board[row][col + i] = 'X'
+                    coords.append([row, col + i])
+                ship_stats[user_input_list[SHIP]]['coord'].append(coords)
+                ship_stats[user_input_list[SHIP]]['num'] += 1
 
 
 def check_all_ships_are_placed(ships):
@@ -112,9 +192,6 @@ def main():
     board_size = 9
     board1 = board_init(board_size)
     board2 = board_init(board_size)
-    
-    print_board(board1)
-    exit()
     
     # Declaration of ship types. The lists contain two values:
     # - first, corresponds to the ship's size
@@ -184,6 +261,11 @@ def main():
             'num': 0
             },
     }
+
+    while True:
+        print_board(board1)
+        place_ship(board1, player1, ship_stats1, ships)
+    exit()
 
     # Player1 places his ships
     place_ship_loop(board1, player1, ship_stats1, ships)
