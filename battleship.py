@@ -145,32 +145,85 @@ def place_ship(board, player, ship_stats, ships):
         if user_input_list[DIRECTION] == 'h':
             
             for col_index in range(col - 1, col + ships[user_input_list[SHIP]][SHIP_LEN]):
+                # Checks if col_index is within a valid range, i.e. between 0 and (board_size - 1)
                 if col_index < 0:
                     continue
                 elif col_index > board_size - 1:
                     print("Edge")
                     user_input = None
                     break
-
+                
+                # Checks if a ship overlaps other ship
                 if board[row][col_index] != '0':
                     msg = "Ships are too close!"
                     user_input = None
                     break
                 
+                # Checks if other ship is above or below
                 if col <= col_index <= col + ships[user_input_list[SHIP]][SHIP_LEN]:
                     for i in [-1, 1]:
-                        if 0 <= row + i <= board_size - 1:
+                        if 0 <= row + i <= board_size - 1: # Checks if indexes after modifications are within a valid range
                             if board[row + i][col_index] != '0':
                                 msg = "Ships are too close!"
                                 user_input = None
                                 break
-                    else:
+                    #else:
+                        #break
+                
+                # Checks if other ship is on the right
+                if col_index == col + ships[user_input_list[SHIP]][SHIP_LEN] - 1 and col_index < board_size - 1:
+                    if board[row][col_index + 1] != '0':
+                        msg = "Ships are too close!"
+                        user_input = None
                         break
+            
             if user_input is not None:
                 coords = []
                 for i in range(ships[user_input_list[SHIP]][SHIP_LEN]):
                     board[row][col + i] = 'X'
                     coords.append([row, col + i])
+                ship_stats[user_input_list[SHIP]]['coord'].append(coords)
+                ship_stats[user_input_list[SHIP]]['num'] += 1
+        
+        elif user_input_list[DIRECTION] == 'v':
+            for row_index in range(row - 1, row + ships[user_input_list[SHIP]][SHIP_LEN]):
+                # Checks if row_index is within a valid range, i.e. between 0 and (board_size - 1)
+                if row_index < 0:
+                    continue
+                elif row_index > board_size - 1:
+                    print("Edge")
+                    user_input = None
+                    break
+                
+                # Checks if a ship overlaps other ship
+                if board[row_index][col] != '0':
+                    msg = "Ships are too close!"
+                    user_input = None
+                    break
+                
+                # Checks if other ship is on the left or on the right
+                if row <= row_index <= row + ships[user_input_list[SHIP]][SHIP_LEN]:
+                    for i in [-1, 1]:
+                        if 0 <= col + i <= board_size - 1: # Checks if indexes after modifications are within a valid range
+                            if board[row_index][col + i] != '0':
+                                msg = "Ships are too close!"
+                                user_input = None
+                                break
+                    #else:
+                        #break
+                        
+                # Checks if other ship is below
+                if row_index == row + ships[user_input_list[SHIP]][SHIP_LEN] - 1 and row_index < board_size - 1:
+                    if board[row_index + 1][col] != '0':
+                        msg = "Ships are too close!"
+                        user_input = None
+                        break
+                    
+            if user_input is not None:
+                coords = []
+                for i in range(ships[user_input_list[SHIP]][SHIP_LEN]):
+                    board[row + i][col] = 'X'
+                    coords.append([row + i, col])
                 ship_stats[user_input_list[SHIP]]['coord'].append(coords)
                 ship_stats[user_input_list[SHIP]]['num'] += 1
 
