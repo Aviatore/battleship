@@ -1,4 +1,5 @@
 import copy
+import pprint
 
 
 def board_init(size):
@@ -226,6 +227,9 @@ def place_ship(board, player, ship_stats, ships):
                     coords.append([row + i, col])
                 ship_stats[user_input_list[SHIP]]['coord'].append(coords)
                 ship_stats[user_input_list[SHIP]]['num'] += 1
+    
+    
+    pprint.pprint(ship_stats)
 
 
 def check_all_ships_are_placed(ships):
