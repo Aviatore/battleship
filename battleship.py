@@ -87,6 +87,46 @@ def battleship_game(board1, board2, ship_stats1, ship_stats2, game_mode, player1
             continue
 
 
+def place_ship_horizontally(user_input, board, ships, ship_stats, ship_type, ship_len, col, row):
+    board_size = len(board)
+
+    for col_index in range(col - 1, col + ship_len):
+        # Checks if col_index is within a valid range, i.e. between 0 and (board_size - 1)
+        if col_index < 0:
+            continue
+        elif col_index > board_size - 1:
+            user_input = None
+            return "The coordinates are outside the board.", user_input
+        
+        # Checks if a ship overlaps other ship
+        if board[row][col_index] != '0':
+            user_input = None
+            return "The ship overlaps the other ship!", user_input
+        
+        # Checks if other ship is above or below
+        if col <= col_index <= col + ship_len:
+            for i in [-1, 1]:
+                if 0 <= row + i <= board_size - 1: # Checks if indexes after modifications are within a valid range
+                    if board[row + i][col_index] != '0':
+                        user_input = None
+                        return "Ships are too close!", user_input
+        
+        # Checks if other ship is on the right
+        if col_index == col + ship_len - 1 and col_index < board_size - 1:
+            if board[row][col_index + 1] != '0':
+                user_input = None
+                return "Ships are too close!", user_input
+
+    if user_input is not None:
+        coords = []
+        for i in range(ship_len):
+            board[row][col + i] = 'X'
+            coords.append([row, col + i])
+        ship_stats[ship_type]['coord'].append(coords)
+        ship_stats[ship_type]['num'] += 1
+        return "", ""
+
+
 def place_ship(board, player, ship_stats, ships):
     """Controls the placement phase.
        Asks the player for coordinates, ship type and direction (h - horizontal or v - vertical), e.g. b2 cruiser h.
@@ -146,44 +186,7 @@ def place_ship(board, player, ship_stats, ships):
         dirs = list(zip(dirs_row, dirs_col))
         
         if DIRECTION == 'h':
-            for col_index in range(col - 1, col + SHIP_LEN):
-                # Checks if col_index is within a valid range, i.e. between 0 and (BOARD_SIZE - 1)
-                if col_index < 0:
-                    continue
-                elif col_index > BOARD_SIZE - 1:
-                    print("Edge")
-                    user_input = None
-                    break
-                
-                # Checks if a ship overlaps other ship
-                if board[row][col_index] != '0':
-                    msg = "Ships are too close!"
-                    user_input = None
-                    break
-                
-                # Checks if other ship is above or below
-                if col <= col_index <= col + SHIP_LEN:
-                    for i in [-1, 1]:
-                        if 0 <= row + i <= BOARD_SIZE - 1: # Checks if indexes after modifications are within a valid range
-                            if board[row + i][col_index] != '0':
-                                msg = "Ships are too close!"
-                                user_input = None
-                                break
-                
-                # Checks if other ship is on the right
-                if col_index == col + SHIP_LEN - 1 and col_index < BOARD_SIZE - 1:
-                    if board[row][col_index + 1] != '0':
-                        msg = "Ships are too close!"
-                        user_input = None
-                        break
-            
-            if user_input is not None:
-                coords = []
-                for i in range(SHIP_LEN):
-                    board[row][col + i] = 'X'
-                    coords.append([row, col + i])
-                ship_stats[SHIP_TYPE]['coord'].append(coords)
-                ship_stats[SHIP_TYPE]['num'] += 1
+            msg, user_input = place_ship_horizontally(user_input, board, ships, ship_stats, SHIP_TYPE, SHIP_LEN, col, row)
         
         elif DIRECTION == 'v':
             for row_index in range(row - 1, row + SHIP_LEN):
