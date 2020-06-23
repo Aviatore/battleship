@@ -83,6 +83,11 @@ def get_ai_target_for_shot(opponent_board, oponent_ship_stats, computer):
 def shot(opponent_board, oponent_ship_stats, player, row, col):
     """Place the player's shot on the opponent's board.
        The shot mark (M, H, S) depends on the shot status, respectively: miss, hit or sunk"""
+    # for ship_type in oponent_ship_stats.keys():
+    #     for ship in ship_type['coord']:
+    #         if [row, col] in ship:
+
+
     pass
 
 
@@ -146,8 +151,16 @@ def place_ship_horizontally(user_input, board, ships, ship_stats, ship_type, shi
         for i in range(ship_len):
             board[row][col + i] = 'X'
             coords.append([row, col + i])
-        ship_stats[ship_type]['coord'].append(coords)
-        ship_stats[ship_type]['num'] += 1
+        
+        ship = {
+            'coord': coords,
+            'shot': [],
+            'len': ship_len
+        }
+        ship_stats[ship_type].append(ship)
+
+        # ship_stats[ship_type]['coord'].append(coords)
+        # ship_stats[ship_type]['num'] += 1
         ships[ship_type][1] -= 1
         return "", ""
 
@@ -187,8 +200,15 @@ def place_ship_vertically(user_input, board, ships, ship_stats, ship_type, ship_
         for i in range(ship_len):
             board[row + i][col] = 'X'
             coords.append([row + i, col])
-        ship_stats[ship_type]['coord'].append(coords)
-        ship_stats[ship_type]['num'] += 1
+
+        ship = {
+            'coord': coords,
+            'shot': [],
+            'len': ship_len
+        }
+        ship_stats[ship_type].append(ship)
+        # ship_stats[ship_type]['coord'].append(coords)
+        # ship_stats[ship_type]['num'] += 1
         ships[ship_type][1] -= 1
         return "", ""
 
@@ -313,42 +333,56 @@ def main():
     # The 'num' key contains the number of ships of its kind. Whenever a ship is sunk, the number is decreased by one.
     # The function 'is_all_ships_destroyed(board, ship_stats)' checks this value to check if all ships were destroyed.
     ship_stats1 = {
-        'carrier': {
-            'coord': [],
-            'num': 0
-            },
-        'battleship': {
-            'coord': [],
-            'num': 0
-            },
-        'cruiser': {
-            'coord': [],
-            'num': 0
-            },
-        'destroyer': {
-            'coord': [],
-            'num': 0
-            },
+        'carrier': [],
+        'battleship': [],
+        'cruiser': [],
+        'destroyer': []
+    }
+
+    ship_stats2 = {
+        'carrier': [],
+        'battleship': [],
+        'cruiser': [],
+        'destroyer': []
     }
     
-    ship_stats2 = {
-        'carrier': {
-            'coord': [],
-            'num': 0
-            },
-        'battleship': {
-            'coord': [],
-            'num': 0
-            },
-        'cruiser': {
-            'coord': [],
-            'num': 0
-            },
-        'destroyer': {
-            'coord': [],
-            'num': 0
-            },
-    }
+    # ship_stats1_tmp = {
+    #     'carrier': {
+    #         'coord': [],
+    #         'num': 0
+    #         },
+    #     'battleship': {
+    #         'coord': [],
+    #         'num': 0
+    #         },
+    #     'cruiser': {
+    #         'coord': [],
+    #         'num': 0
+    #         },
+    #     'destroyer': {
+    #         'coord': [],
+    #         'num': 0
+    #         },
+    # }
+    
+    # ship_stats2_tmp = {
+    #     'carrier': {
+    #         'coord': [],
+    #         'num': 0
+    #         },
+    #     'battleship': {
+    #         'coord': [],
+    #         'num': 0
+    #         },
+    #     'cruiser': {
+    #         'coord': [],
+    #         'num': 0
+    #         },
+    #     'destroyer': {
+    #         'coord': [],
+    #         'num': 0
+    #         },
+    # }
 
     while True:
         clear()
