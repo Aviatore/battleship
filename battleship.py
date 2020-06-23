@@ -124,6 +124,7 @@ def place_ship_horizontally(user_input, board, ships, ship_stats, ship_type, shi
             coords.append([row, col + i])
         ship_stats[ship_type]['coord'].append(coords)
         ship_stats[ship_type]['num'] += 1
+        ships[ship_type][1] -= 1
         return "", ""
 
 
@@ -164,6 +165,7 @@ def place_ship_vertically(user_input, board, ships, ship_stats, ship_type, ship_
             coords.append([row + i, col])
         ship_stats[ship_type]['coord'].append(coords)
         ship_stats[ship_type]['num'] += 1
+        ships[ship_type][1] -= 1
         return "", ""
 
 
@@ -172,23 +174,22 @@ def place_ship(board, player, ship_stats, ships):
        Asks the player for coordinates, ship type and direction (h - horizontal or v - vertical), e.g. b2 cruiser h.
        """
     BOARD_SIZE = len(board)
-    LEFT, DOWN = [-1, -1]
-    RIGHT, UP = [1, 1]
-    STAY = 0
     
-    row_len = len(board[0])
-    col_len = len(board)
     rows_template = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I']
     cols = []
-    for col_index in range(col_len):
+
+    for col_index in range(BOARD_SIZE):
         cols.append(col_index + 1)
+
     cols_str = list(map(str, cols))
     rows = []
-    for row_index in range(row_len):
+
+    for row_index in range(BOARD_SIZE):
         rows.append(rows_template[row_index])
 
     user_input = None
     msg = ""
+
     while user_input is None:
         print(msg)
         msg = ""
@@ -217,13 +218,13 @@ def place_ship(board, player, ship_stats, ships):
         elif DIRECTION not in ['h', 'v']:
             user_input = None
             continue
+        elif SHIP_AMOUNT == 0:
+            msg = f"You have no {SHIP_TYPE} left."
+            user_input = None
+            continue
         else:
             row = rows.index(ROW.upper())
             col = cols.index(int(COL))
-        
-        dirs_row = [STAY, UP, DOWN, STAY]
-        dirs_col = [LEFT, STAY, STAY, RIGHT]
-        dirs = list(zip(dirs_row, dirs_col))
         
         if DIRECTION == 'h':
             msg, user_input = place_ship_horizontally(user_input, board, ships, ship_stats, SHIP_TYPE, SHIP_LEN, col, row)
@@ -233,6 +234,7 @@ def place_ship(board, player, ship_stats, ships):
     
     
     pprint.pprint(ship_stats)
+    pprint.pprint(ships)
 
 
 def check_all_ships_are_placed(ships):
@@ -259,10 +261,10 @@ def main():
     # - first, corresponds to the ship's size
     # - second, corresponds to the number of ship units that can be placed on board
     ships = {
-        'carrier': [5, 2],
-        'battleship': [4, 3],
+        'carrier': [5, 1],
+        'battleship': [4, 2],
         'cruiser': [3, 3],
-        'destroyer': [2, 3]
+        'destroyer': [2, 4]
     }
     
     player1 = {
