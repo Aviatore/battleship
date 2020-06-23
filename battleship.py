@@ -91,13 +91,7 @@ def place_ship(board, player, ship_stats, ships):
     """Controls the placement phase.
        Asks the player for coordinates, ship type and direction (h - horizontal or v - vertical), e.g. b2 cruiser h.
        """
-    board_size = len(board)
-    ROW = 0
-    COL = 1
-    SHIP = 1
-    SHIP_LEN = 0
-    SHIP_NUM = 1
-    DIRECTION = 2
+    BOARD_SIZE = len(board)
     LEFT, DOWN = [-1, -1]
     RIGHT, UP = [1, 1]
     STAY = 0
@@ -120,36 +114,43 @@ def place_ship(board, player, ship_stats, ships):
         msg = ""
         user_input = input(f"{player['name']}, please give coordinates: ")
         user_input_list = user_input.split(" ")
+
+        ROW = user_input_list[0][0] # The row letter
+        COL = user_input_list[0][1] # The col number
+        SHIP_TYPE = user_input_list[1] # The name of the ship
+        SHIP_LEN = ships[SHIP_TYPE][0] # The length of the ship
+        SHIP_AMOUNT = ships[SHIP_TYPE][1] # The number of ships to be placed on the board
+        DIRECTION = user_input_list[2] # The direction code: 'h' - horizontally or 'v' - vertically
+
         if user_input_list[0] == 'quit':
             print("Good bye!")
             exit()
         elif len(user_input_list) != 3:
             user_input = None
             continue
-        elif user_input_list[0][ROW].upper() not in rows or user_input_list[0][COL] not in cols_str:
+        elif ROW.upper() not in rows or COL not in cols_str:
             user_input = None
             continue
-        elif user_input_list[SHIP] not in ['carrier', 'battleship', 'cruiser', 'destroyer']:
+        elif SHIP_TYPE not in ['carrier', 'battleship', 'cruiser', 'destroyer']:
             user_input = None
             continue
-        elif user_input_list[DIRECTION] not in ['h', 'v']:
+        elif DIRECTION not in ['h', 'v']:
             user_input = None
             continue
         else:
-            row = rows.index(user_input_list[0][ROW].upper())
-            col = cols.index(int(user_input_list[0][COL]))
+            row = rows.index(ROW.upper())
+            col = cols.index(int(COL))
         
         dirs_row = [STAY, UP, DOWN, STAY]
         dirs_col = [LEFT, STAY, STAY, RIGHT]
         dirs = list(zip(dirs_row, dirs_col))
         
-        if user_input_list[DIRECTION] == 'h':
-            
-            for col_index in range(col - 1, col + ships[user_input_list[SHIP]][SHIP_LEN]):
-                # Checks if col_index is within a valid range, i.e. between 0 and (board_size - 1)
+        if DIRECTION == 'h':
+            for col_index in range(col - 1, col + SHIP_LEN):
+                # Checks if col_index is within a valid range, i.e. between 0 and (BOARD_SIZE - 1)
                 if col_index < 0:
                     continue
-                elif col_index > board_size - 1:
+                elif col_index > BOARD_SIZE - 1:
                     print("Edge")
                     user_input = None
                     break
@@ -161,18 +162,16 @@ def place_ship(board, player, ship_stats, ships):
                     break
                 
                 # Checks if other ship is above or below
-                if col <= col_index <= col + ships[user_input_list[SHIP]][SHIP_LEN]:
+                if col <= col_index <= col + SHIP_LEN:
                     for i in [-1, 1]:
-                        if 0 <= row + i <= board_size - 1: # Checks if indexes after modifications are within a valid range
+                        if 0 <= row + i <= BOARD_SIZE - 1: # Checks if indexes after modifications are within a valid range
                             if board[row + i][col_index] != '0':
                                 msg = "Ships are too close!"
                                 user_input = None
                                 break
-                    #else:
-                        #break
                 
                 # Checks if other ship is on the right
-                if col_index == col + ships[user_input_list[SHIP]][SHIP_LEN] - 1 and col_index < board_size - 1:
+                if col_index == col + SHIP_LEN - 1 and col_index < BOARD_SIZE - 1:
                     if board[row][col_index + 1] != '0':
                         msg = "Ships are too close!"
                         user_input = None
@@ -180,18 +179,18 @@ def place_ship(board, player, ship_stats, ships):
             
             if user_input is not None:
                 coords = []
-                for i in range(ships[user_input_list[SHIP]][SHIP_LEN]):
+                for i in range(SHIP_LEN):
                     board[row][col + i] = 'X'
                     coords.append([row, col + i])
-                ship_stats[user_input_list[SHIP]]['coord'].append(coords)
-                ship_stats[user_input_list[SHIP]]['num'] += 1
+                ship_stats[SHIP_TYPE]['coord'].append(coords)
+                ship_stats[SHIP_TYPE]['num'] += 1
         
-        elif user_input_list[DIRECTION] == 'v':
-            for row_index in range(row - 1, row + ships[user_input_list[SHIP]][SHIP_LEN]):
-                # Checks if row_index is within a valid range, i.e. between 0 and (board_size - 1)
+        elif DIRECTION == 'v':
+            for row_index in range(row - 1, row + SHIP_LEN):
+                # Checks if row_index is within a valid range, i.e. between 0 and (BOARD_SIZE - 1)
                 if row_index < 0:
                     continue
-                elif row_index > board_size - 1:
+                elif row_index > BOARD_SIZE - 1:
                     print("Edge")
                     user_input = None
                     break
@@ -203,18 +202,16 @@ def place_ship(board, player, ship_stats, ships):
                     break
                 
                 # Checks if other ship is on the left or on the right
-                if row <= row_index <= row + ships[user_input_list[SHIP]][SHIP_LEN]:
+                if row <= row_index <= row + SHIP_LEN:
                     for i in [-1, 1]:
-                        if 0 <= col + i <= board_size - 1: # Checks if indexes after modifications are within a valid range
+                        if 0 <= col + i <= BOARD_SIZE - 1: # Checks if indexes after modifications are within a valid range
                             if board[row_index][col + i] != '0':
                                 msg = "Ships are too close!"
                                 user_input = None
                                 break
-                    #else:
-                        #break
                         
                 # Checks if other ship is below
-                if row_index == row + ships[user_input_list[SHIP]][SHIP_LEN] - 1 and row_index < board_size - 1:
+                if row_index == row + SHIP_LEN - 1 and row_index < BOARD_SIZE - 1:
                     if board[row_index + 1][col] != '0':
                         msg = "Ships are too close!"
                         user_input = None
@@ -222,11 +219,11 @@ def place_ship(board, player, ship_stats, ships):
                     
             if user_input is not None:
                 coords = []
-                for i in range(ships[user_input_list[SHIP]][SHIP_LEN]):
+                for i in range(SHIP_LEN):
                     board[row + i][col] = 'X'
                     coords.append([row + i, col])
-                ship_stats[user_input_list[SHIP]]['coord'].append(coords)
-                ship_stats[user_input_list[SHIP]]['num'] += 1
+                ship_stats[SHIP_TYPE]['coord'].append(coords)
+                ship_stats[SHIP_TYPE]['num'] += 1
     
     
     pprint.pprint(ship_stats)
