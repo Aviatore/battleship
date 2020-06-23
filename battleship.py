@@ -127,6 +127,46 @@ def place_ship_horizontally(user_input, board, ships, ship_stats, ship_type, shi
         return "", ""
 
 
+def place_ship_vertically(user_input, board, ships, ship_stats, ship_type, ship_len, col, row):
+    board_size = len(board)
+
+    for row_index in range(row - 1, row + ship_len):
+        # Checks if row_index is within a valid range, i.e. between 0 and (board_size - 1)
+        if row_index < 0:
+            continue
+        elif row_index > board_size - 1:
+            user_input = None
+            return "The coordinates are outside the board.", user_input
+        
+        # Checks if a ship overlaps other ship
+        if board[row_index][col] != '0':
+            user_input = None
+            return "The ship overlaps the other ship!", user_input
+        
+        # Checks if other ship is on the left or on the right
+        if row <= row_index <= row + ship_len:
+            for i in [-1, 1]:
+                if 0 <= col + i <= board_size - 1: # Checks if indexes after modifications are within a valid range
+                    if board[row_index][col + i] != '0':
+                        user_input = None
+                        return "Ships are too close!", user_input
+                
+        # Checks if other ship is below
+        if row_index == row + ship_len - 1 and row_index < board_size - 1:
+            if board[row_index + 1][col] != '0':
+                user_input = None
+                return "Ships are too close!", user_input
+            
+    if user_input is not None:
+        coords = []
+        for i in range(ship_len):
+            board[row + i][col] = 'X'
+            coords.append([row + i, col])
+        ship_stats[ship_type]['coord'].append(coords)
+        ship_stats[ship_type]['num'] += 1
+        return "", ""
+
+
 def place_ship(board, player, ship_stats, ships):
     """Controls the placement phase.
        Asks the player for coordinates, ship type and direction (h - horizontal or v - vertical), e.g. b2 cruiser h.
@@ -189,44 +229,7 @@ def place_ship(board, player, ship_stats, ships):
             msg, user_input = place_ship_horizontally(user_input, board, ships, ship_stats, SHIP_TYPE, SHIP_LEN, col, row)
         
         elif DIRECTION == 'v':
-            for row_index in range(row - 1, row + SHIP_LEN):
-                # Checks if row_index is within a valid range, i.e. between 0 and (BOARD_SIZE - 1)
-                if row_index < 0:
-                    continue
-                elif row_index > BOARD_SIZE - 1:
-                    print("Edge")
-                    user_input = None
-                    break
-                
-                # Checks if a ship overlaps other ship
-                if board[row_index][col] != '0':
-                    msg = "Ships are too close!"
-                    user_input = None
-                    break
-                
-                # Checks if other ship is on the left or on the right
-                if row <= row_index <= row + SHIP_LEN:
-                    for i in [-1, 1]:
-                        if 0 <= col + i <= BOARD_SIZE - 1: # Checks if indexes after modifications are within a valid range
-                            if board[row_index][col + i] != '0':
-                                msg = "Ships are too close!"
-                                user_input = None
-                                break
-                        
-                # Checks if other ship is below
-                if row_index == row + SHIP_LEN - 1 and row_index < BOARD_SIZE - 1:
-                    if board[row_index + 1][col] != '0':
-                        msg = "Ships are too close!"
-                        user_input = None
-                        break
-                    
-            if user_input is not None:
-                coords = []
-                for i in range(SHIP_LEN):
-                    board[row + i][col] = 'X'
-                    coords.append([row + i, col])
-                ship_stats[SHIP_TYPE]['coord'].append(coords)
-                ship_stats[SHIP_TYPE]['num'] += 1
+            msg, user_input = place_ship_vertically(user_input, board, ships, ship_stats, SHIP_TYPE, SHIP_LEN, col, row)
     
     
     pprint.pprint(ship_stats)
