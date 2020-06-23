@@ -232,9 +232,9 @@ def place_ship(board, player, ship_stats, ships):
         elif DIRECTION == 'v':
             msg, user_input = place_ship_vertically(user_input, board, ships, ship_stats, SHIP_TYPE, SHIP_LEN, col, row)
     
-    
-    pprint.pprint(ship_stats)
-    pprint.pprint(ships)
+    # DEBUG: Print the content of dictionaries:
+    # pprint.pprint(ship_stats)
+    # pprint.pprint(ships)
 
 
 def check_all_ships_are_placed(ships):
