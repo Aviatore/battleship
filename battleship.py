@@ -1,5 +1,14 @@
 import copy
 import pprint
+from os import system
+
+
+def go_to_point(row, col):
+    return f"\033[{row};{col}H"
+
+
+def clear():
+    system("clear")
 
 
 def board_init(size):
@@ -32,6 +41,21 @@ def print_board(board):
         print(f"{rows[index]} {' '.join(board[index])}")
         
     print("")
+
+
+def print_table(ships, row, col):
+    COL1_LEN = 7
+    COL2_LEN = 10
+    __row = row
+    __col = col
+    print(f"{go_to_point(__row, __col)}amount | ship type  | ship length")
+    __row += 1
+    print(f"{go_to_point(__row, __col)}-------+------------+------------")
+    __row += 1
+
+    for ship in ships.keys():
+        print(f"{go_to_point(__row, __col)}{str(ships[ship][1]).center(COL1_LEN)}| {ship.ljust(COL2_LEN)} | {'X'*ships[ship][0]}")
+        __row += 1
 
 
 def print_boards(board1, board2):
@@ -327,7 +351,9 @@ def main():
     }
 
     while True:
+        clear()
         print_board(board1)
+        print_table(ships, 5, 24)
         place_ship(board1, player1, ship_stats1, ships)
     exit()
 
