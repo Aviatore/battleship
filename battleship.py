@@ -84,7 +84,7 @@ def shot(opponent_board, oponent_ship_stats, player, row, col):
     """Place the player's shot on the opponent's board.
        The shot mark (M, H, S) depends on the shot status, respectively: miss, hit or sunk"""
     for ship_type in oponent_ship_stats.keys():
-        for ship in ship_type:
+        for ship in oponent_ship_stats[ship_type]:
             if [row, col] in ship['coord']:
                 ship['shot'].append([row, col])
                 if ship['len'] == len(ship['shot']):
