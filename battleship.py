@@ -1,6 +1,7 @@
 import copy
 import pprint
 from os import system
+import random
 
 
 def go_to_point(row, col):
@@ -146,11 +147,66 @@ def get_player_target_for_shot(opponent_board, player):
     return row, col
 
 
+def ai_is_ship_placed_horizontally(coords):
+    ROW = 0
+
+    if coords[0][ROW] == coords[1][ROW]:
+        return True
+    else:
+        return False
+
+
+def ai_horizontally_pick_coord(board, coords):
+    BOARD_SIZE = len(board)
+    ROW = 0
+    COL = 1
+    row = coords[0][ROW]
+    col_index_left_shotted_module = min( map(lambda x : x[1], coords) )
+    col_index_right_shotted_module = max( map(lambda x : x[1], coords) )
+
+    coords_for_shot = []
+
+    if col_index_left_shotted_module > 0:
+        if board[row][col_index_left_shotted_module - 1] == '0':
+            if col_index_left_shotted_module - 1 > 0:
+                if board[row][col_index_left_shotted_module - 2] in ['0', 'M', 'H']:
+                    coords_for_shot.append([row, col_index_left_shotted_module - 1])
+            else:
+                coords_for_shot.append([row, col_index_left_shotted_module - 1])
+    
+    if col_index_right_shotted_module < BOARD_SIZE - 1:
+        if board[row][col_index_right_shotted_module + 1] == '0':
+            if col_index_right_shotted_module + 1 < BOARD_SIZE - 1:
+                if board[row][col_index_right_shotted_module + 2] in ['0', 'M', 'H']:
+                    coords_for_shot.append([row, col_index_right_shotted_module + 1])
+            else:
+                coords_for_shot.append([row, col_index_right_shotted_module + 1])
+    
+    if len(coords_for_shot) == 0:
+        row = None
+        col = None
+        return row, col
+    elif len(coords_for_shot) == 1:
+        row = coords_for_shot[0][ROW]
+        col = coords_for_shot[0][COL]
+    else:
+        random_index = random.randrange(len(coords_for_shot))
+        row = coords_for_shot[random_index][ROW]
+        col = coords_for_shot[random_index][COL]
+
+
 def get_ai_target_for_shot(opponent_board, oponent_ship_stats, computer):
     """Pics a valid move"""
     row = 0
     col = 0
     
+    # for ship_type in oponent_ship_stats.keys():
+    #     for ship in oponent_ship_stats[ship_type]:
+    #         if 1 < ship['shot'] < ship['len']:
+    #             if ai_is_ship_placed_horizontally(ship['shot']):
+            
+
+
     return row, col
 
 
