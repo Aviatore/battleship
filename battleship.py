@@ -63,7 +63,7 @@ def print_board_mod(board, row, col, player):
     
     print(f"{go_to_point(__row, __col)}{player['name']}")
     __row += 1
-    print(f"{go_to_point(__row, __col)}{' ', ' '.join(cols_str)}")
+    print(f"{go_to_point(__row, __col)}  {' '.join(cols_str)}")
     __row += 1
     for index in range(col_len):
         print(f"{go_to_point(__row, __col)}{rows[index]} {' '.join(board[index])}")
@@ -100,9 +100,49 @@ def print_boards(board1, board2, player1, player2):
 def get_player_target_for_shot(opponent_board, player):
     """Asks the player for coordinates.
        Checks if the move is valid. Hits that target used coordinates or that target outside the range, are treated as invalid."""
-    row = 0
-    col = 0
+    BOARD_SIZE = len(opponent_board)
     
+    cols = []
+
+    for col_index in range(BOARD_SIZE):
+        cols.append(col_index + 1)
+
+    cols_str = list(map(str, cols))
+    
+    rows_template = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I']
+    rows = []
+
+    for row_index in range(BOARD_SIZE):
+        rows.append(rows_template[row_index])
+
+    user_input = None
+    msg = ""
+
+    while user_input is None:
+        print(msg)
+        msg = ""
+        user_input = input(f"{player['name']}, please give coordinates: ")
+
+        ROW = user_input[0] # The row letter
+        COL = user_input[1] # The col number
+
+        if user_input[0] == 'quit':
+            print("Good bye!")
+            exit()
+        elif len(user_input) != 2:
+            user_input = None
+            continue
+        elif ROW.upper() not in rows or COL not in cols_str:
+            user_input = None
+            continue
+        else:
+            row = rows.index(ROW.upper())
+            col = cols.index(int(COL))
+
+        if opponent_board[row][col] != '0':
+            msg = "You have already made a shot to this coordinates."
+            user_input = None
+            continue
     return row, col
 
 
@@ -117,6 +157,7 @@ def get_ai_target_for_shot(opponent_board, oponent_ship_stats, computer):
 def shot(opponent_board, oponent_ship_stats, player, row, col):
     """Place the player's shot on the opponent's board.
        The shot mark (M, H, S) depends on the shot status, respectively: miss, hit or sunk"""
+    
     for ship_type in oponent_ship_stats.keys():
         for ship in oponent_ship_stats[ship_type]:
             if [row, col] in ship['coord']:
@@ -124,8 +165,10 @@ def shot(opponent_board, oponent_ship_stats, player, row, col):
                 if ship['len'] == len(ship['shot']):
                     for cord in ship['shot']:
                         opponent_board[cord[0]][cord[1]] = 'S'
+                    return
                 else:
                     opponent_board[row][col] = 'H'
+                    return
     else:
         opponent_board[row][col] = 'M'
 
@@ -140,6 +183,7 @@ def battleship_game(board1, board2, ship_stats1, ship_stats2, game_mode, player1
     """Game logic."""
     loop = True
     while loop:
+        clear()
         print_boards(board1, board2, player1, player2)
         row, col = get_player_target_for_shot(board2, player1)
         shot(board2, ship_stats2, player1, row, col)
@@ -147,6 +191,7 @@ def battleship_game(board1, board2, ship_stats1, ship_stats2, game_mode, player1
             loop = False
             continue
         
+        clear()
         print_boards(board1, board2, player1, player2)
         row, col = get_player_target_for_shot(board1, player2)
         shot(board1, ship_stats1, player2, row, col)
@@ -279,12 +324,7 @@ def place_ship(board, player, ship_stats, ships):
         user_input = input(f"{player['name']}, please give coordinates: ")
         user_input_list = user_input.split(" ")
 
-        ROW = user_input_list[0][0] # The row letter
-        COL = user_input_list[0][1] # The col number
-        SHIP_TYPE = user_input_list[1] # The name of the ship
-        SHIP_LEN = ships[SHIP_TYPE][0] # The length of the ship
-        SHIP_AMOUNT = ships[SHIP_TYPE][1] # The number of ships to be placed on the board
-        DIRECTION = user_input_list[2] # The direction code: 'h' - horizontally or 'v' - vertically
+        
 
         if user_input_list[0] == 'quit':
             print("Good bye!")
@@ -292,7 +332,13 @@ def place_ship(board, player, ship_stats, ships):
         elif len(user_input_list) != 3:
             user_input = None
             continue
-        elif ROW.upper() not in rows or COL not in cols_str:
+
+        ROW = user_input_list[0][0] # The row letter
+        COL = user_input_list[0][1] # The col number
+        SHIP_TYPE = user_input_list[1] # The name of the ship
+        DIRECTION = user_input_list[2] # The direction code: 'h' - horizontally or 'v' - vertically
+
+        if ROW.upper() not in rows or COL not in cols_str:
             user_input = None
             continue
         elif SHIP_TYPE not in ['carrier', 'battleship', 'cruiser', 'destroyer']:
@@ -301,7 +347,11 @@ def place_ship(board, player, ship_stats, ships):
         elif DIRECTION not in ['h', 'v']:
             user_input = None
             continue
-        elif SHIP_AMOUNT == 0:
+
+        SHIP_LEN = ships[SHIP_TYPE][0] # The length of the ship
+        SHIP_AMOUNT = ships[SHIP_TYPE][1] # The number of ships to be placed on the board
+        
+        if SHIP_AMOUNT == 0:
             msg = f"You have no {SHIP_TYPE} left."
             user_input = None
             continue
@@ -349,19 +399,26 @@ def main():
     # Declaration of ship types. The lists contain two values:
     # - first, corresponds to the ship's size
     # - second, corresponds to the number of ship units that can be placed on board
-    ships = {
+    ships_ = {
         'carrier': [5, 1],
         'battleship': [4, 2],
         'cruiser': [3, 3],
         'destroyer': [2, 4]
     }
+
+    ships = {
+        'carrier': [5, 1],
+        'battleship': [4, 0],
+        'cruiser': [3, 0],
+        'destroyer': [2, 0]
+    }
     
     player1 = {
-        'name': 'WW',
+        'name': 'Ryland Hailey',
         'color': None
     }
     player2 = {
-        'name': 'WW',
+        'name': 'Ulric Alden',
         'color': None
     }
     
