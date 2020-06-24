@@ -84,16 +84,16 @@ def shot(opponent_board, oponent_ship_stats, player, row, col):
     """Place the player's shot on the opponent's board.
        The shot mark (M, H, S) depends on the shot status, respectively: miss, hit or sunk"""
     for ship_type in oponent_ship_stats.keys():
-        for ship in ship_type:
+        for ship in oponent_ship_stats[ship_type]:
             if [row, col] in ship['coord']:
                 ship['shot'].append([row, col])
                 if ship['len'] == len(ship['shot']):
                     for cord in ship['shot']:
-                        opponent_board[cord[0], cord[1]] = 'S'
+                        opponent_board[cord[0]][cord[1]] = 'S'
                 else:
-                    opponent_board[row, col] = 'H'
+                    opponent_board[row][col] = 'H'
     else:
-        opponent_board[row, col] = 'M'
+        opponent_board[row][col] = 'M'
 
 
 def is_all_ships_destroyed(board, ship_stats):
@@ -290,14 +290,20 @@ def check_all_ships_are_placed(ships):
     """Checks the remaining number of ships to be placed.
        If the number is non-zero, the function returns True.
        If there are no ships left, it returns False."""
-    pass
+    for ship_type in ships:
+        if ships[ship_type][1] > 0:
+            return True
+    else:
+        return False
 
 
 def place_ship_loop(board, player, ship_stats, ships):
     __ships = copy.deepcopy(ships)
     
     while check_all_ships_are_placed(__ships):
+        clear()
         print_board(board)
+        print_table(__ships, 5, 24)
         place_ship(board, player, ship_stats, __ships)
 
 
@@ -389,12 +395,12 @@ def main():
     #         },
     # }
 
-    while True:
-        clear()
-        print_board(board1)
-        print_table(ships, 5, 24)
-        place_ship(board1, player1, ship_stats1, ships)
-    exit()
+    # while True:
+    #     clear()
+    #     print_board(board1)
+    #     print_table(ships, 5, 24)
+    #     place_ship(board1, player1, ship_stats1, ships)
+    # exit()
 
     
 
