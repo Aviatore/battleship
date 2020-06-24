@@ -43,6 +43,35 @@ def print_board(board):
     print("")
 
 
+def print_board_mod(board, row, col, player):
+    """Prints board to the screen during the placement phase."""
+    __row = row
+    __col = col
+    row_len = len(board[0])
+    col_len = len(board)
+    rows_template = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I']
+    cols = []
+    
+    for col_index in range(col_len):
+        cols.append(col_index + 1)
+        
+    cols_str = list(map(str, cols))
+    rows = []
+    
+    for row_index in range(row_len):
+        rows.append(rows_template[row_index])
+    
+    print(f"{go_to_point(__row, __col)}{player['name']}")
+    __row += 1
+    print(f"{go_to_point(__row, __col)}{' ', ' '.join(cols_str)}")
+    __row += 1
+    for index in range(col_len):
+        print(f"{go_to_point(__row, __col)}{rows[index]} {' '.join(board[index])}")
+        __row += 1
+        
+    print("")
+
+
 def print_table(ships, row, col):
     COL1_LEN = 7
     COL2_LEN = 10
@@ -58,9 +87,14 @@ def print_table(ships, row, col):
         __row += 1
 
 
-def print_boards(board1, board2):
+def print_boards(board1, board2, player1, player2):
     """Prints both boards to the screen."""
-    pass
+    BOARD1_ROW = 1
+    BOARD1_COL = 1
+    BOARD2_ROW = 1
+    BOARD2_COL = 24
+    print_board_mod(board1, BOARD1_ROW, BOARD1_COL, player1)
+    print_board_mod(board2, BOARD2_ROW, BOARD2_COL, player2)
 
 
 def get_player_target_for_shot(opponent_board, player):
@@ -106,14 +140,14 @@ def battleship_game(board1, board2, ship_stats1, ship_stats2, game_mode, player1
     """Game logic."""
     loop = True
     while loop:
-        print_boards(board1, board2)
+        print_boards(board1, board2, player1, player2)
         row, col = get_player_target_for_shot(board2, player1)
         shot(board2, ship_stats2, player1, row, col)
         if is_all_ships_destroyed(board2, ship_stats2):
             loop = False
             continue
         
-        print_boards(board1, board2)
+        print_boards(board1, board2, player1, player2)
         row, col = get_player_target_for_shot(board1, player2)
         shot(board1, ship_stats1, player2, row, col)
         if is_all_ships_destroyed(board1, ship_stats1):
