@@ -150,10 +150,13 @@ def get_player_target_for_shot(opponent_board, player):
 def ai_is_ship_placed_horizontally(coords):
     ROW = 0
 
-    if coords[0][ROW] == coords[1][ROW]:
-        return True
+    if len(coords) > 1:
+        if coords[0][ROW] == coords[1][ROW]:
+            return True
+        else:
+            return False
     else:
-        return False
+        return True
 
 
 def ai_horizontally_pick_coord(board, coords):
@@ -161,13 +164,17 @@ def ai_horizontally_pick_coord(board, coords):
     ROW = 0
     COL = 1
     row = coords[0][ROW]
-    col_index_left_shotted_module = min( map(lambda x : x[1], coords) )
-    col_index_right_shotted_module = max( map(lambda x : x[1], coords) )
+
+    if len(coords) > 1:
+        col_index_left_shotted_module = min( map(lambda x : x[1], coords) )
+        col_index_right_shotted_module = max( map(lambda x : x[1], coords) )
+    else:
+        col_index_left_shotted_module = col_index_right_shotted_module = coords[0][COL]
 
     coords_for_shot = []
-
+    
     if col_index_left_shotted_module > 0:
-        if board[row][col_index_left_shotted_module - 1] == '0':
+        if board[row][col_index_left_shotted_module - 1] == '0' and ai_is_not_sunk_above_below(board, [row, col_index_left_shotted_module - 1]):
             if col_index_left_shotted_module - 1 > 0:
                 if board[row][col_index_left_shotted_module - 2] in ['0', 'M', 'H']:
                     coords_for_shot.append([row, col_index_left_shotted_module - 1])
@@ -175,7 +182,7 @@ def ai_horizontally_pick_coord(board, coords):
                 coords_for_shot.append([row, col_index_left_shotted_module - 1])
     
     if col_index_right_shotted_module < BOARD_SIZE - 1:
-        if board[row][col_index_right_shotted_module + 1] == '0':
+        if board[row][col_index_right_shotted_module + 1] == '0' and ai_is_not_sunk_above_below(board, [row, col_index_left_shotted_module + 1]):
             if col_index_right_shotted_module + 1 < BOARD_SIZE - 1:
                 if board[row][col_index_right_shotted_module + 2] in ['0', 'M', 'H']:
                     coords_for_shot.append([row, col_index_right_shotted_module + 1])
@@ -189,23 +196,137 @@ def ai_horizontally_pick_coord(board, coords):
     elif len(coords_for_shot) == 1:
         row = coords_for_shot[0][ROW]
         col = coords_for_shot[0][COL]
+        return row, col
     else:
         random_index = random.randrange(len(coords_for_shot))
         row = coords_for_shot[random_index][ROW]
         col = coords_for_shot[random_index][COL]
+        return row, col
+
+
+def ai_vertically_pick_coord(board, coords):
+    BOARD_SIZE = len(board)
+    ROW = 0
+    COL = 1
+    col = coords[0][COL]
+
+    if len(coords) > 1:
+        row_index_up_shotted_module = min( map(lambda x : x[0], coords) )
+        row_index_down_shotted_module = max( map(lambda x : x[0], coords) )
+    else:
+        row_index_up_shotted_module = row_index_down_shotted_module = coords[0][ROW]
+
+    coords_for_shot = []
+
+    if row_index_up_shotted_module > 0:
+        if board[row_index_up_shotted_module - 1][col] == '0' and ai_is_not_sunk_left_right(board, [row_index_up_shotted_module - 1, col]):
+            if row_index_up_shotted_module - 1 > 0:
+                if board[row_index_up_shotted_module - 2][col] in ['0', 'M', 'H']:
+                    coords_for_shot.append([row_index_up_shotted_module - 1, col])
+            else:
+                coords_for_shot.append([row_index_up_shotted_module - 1, col])
+    
+    if row_index_down_shotted_module < BOARD_SIZE - 1:
+        if board[row_index_down_shotted_module + 1][col] == '0' and ai_is_not_sunk_left_right(board, [row_index_up_shotted_module + 1, col]):
+            if row_index_down_shotted_module + 1 < BOARD_SIZE - 1:
+                if board[row_index_down_shotted_module + 2][col] in ['0', 'M', 'H']:
+                    coords_for_shot.append([row_index_down_shotted_module + 1, col])
+            else:
+                coords_for_shot.append([row_index_down_shotted_module + 1, col])
+
+    if len(coords_for_shot) == 0:
+        row = None
+        col = None
+        return row, col
+    elif len(coords_for_shot) == 1:
+        row = coords_for_shot[0][ROW]
+        col = coords_for_shot[0][COL]
+        return row, col
+    else:
+        random_index = random.randrange(len(coords_for_shot))
+        row = coords_for_shot[random_index][ROW]
+        col = coords_for_shot[random_index][COL]
+        return row, col
+
+
+def ai_get_coords_of_available_shots(board):
+    SIZE = len(board)
+    
+    valid_shots = []
+    for row_index in range(SIZE):
+        for col_index in range(SIZE):
+            if ai_is_shot_valid(board, [row_index, col_index]):
+                valid_shots.append([row_index, col_index])
+    
+    return valid_shots
+
+
+# The function checks if there is a sunk ship on the left or on the right-hand side
+# from the specified position
+def ai_is_not_sunk_left_right(board, coord):
+    SIZE = len(board)
+
+    row, col = coord
+
+    if col > 0:
+        if board[row][col - 1] == 'S':
+            return False
+    
+    if col < SIZE - 1:
+        if board[row][col + 1] == 'S':
+            return False
+    
+    return True
+
+
+# The function checks if there is a sunk ship above or below
+# the specified position
+def ai_is_not_sunk_above_below(board, coord):
+    SIZE = len(board)
+
+    row, col = coord
+
+    if row > 0:
+        if board[row - 1][col] == 'S':
+            return False
+    
+    if row < SIZE - 1:
+        if board[row + 1][col] == 'S':
+            return False
+    
+    return True
+
+
+def ai_is_shot_valid(board, coord):
+    row, col = coord
+
+    if board[row][col] == '0':
+        if ai_is_not_sunk_left_right(board, [row, col]) and ai_is_not_sunk_above_below(board, [row, col]):
+            return True
+        else:
+            return False
+    else:
+        return False
 
 
 def get_ai_target_for_shot(opponent_board, oponent_ship_stats, computer):
-    """Pics a valid move"""
-    row = 0
-    col = 0
-    
-    # for ship_type in oponent_ship_stats.keys():
-    #     for ship in oponent_ship_stats[ship_type]:
-    #         if 1 < ship['shot'] < ship['len']:
-    #             if ai_is_ship_placed_horizontally(ship['shot']):
-            
+    """Pics a valid move"""    
+    row = col = None
 
+    for ship_type in oponent_ship_stats.keys():
+        for ship in oponent_ship_stats[ship_type]:       
+            if 1 <= len(ship['shot']) < ship['len']:
+                if ai_is_ship_placed_horizontally(ship['shot']):
+                    row, col = ai_horizontally_pick_coord(opponent_board, ship['shot'])
+                
+                if row is None:
+                    row, col = ai_vertically_pick_coord(opponent_board, ship['shot'])
+    
+    if row is None or col is None:
+        valid_shots = ai_get_coords_of_available_shots(opponent_board)
+
+        valid_shots_random_index = random.randrange(len(valid_shots))
+        row, col = valid_shots[valid_shots_random_index]
 
     return row, col
 
@@ -238,23 +359,40 @@ def is_all_ships_destroyed(board, ship_stats):
 def battleship_game(board1, board2, ship_stats1, ship_stats2, game_mode, player1, player2):
     """Game logic."""
     loop = True
-    while loop:
-        clear()
-        print_boards(board1, board2, player1, player2)
-        row, col = get_player_target_for_shot(board2, player1)
-        shot(board2, ship_stats2, player1, row, col)
-        if is_all_ships_destroyed(board2, ship_stats2):
-            loop = False
-            continue
-        
-        clear()
-        print_boards(board1, board2, player1, player2)
-        row, col = get_player_target_for_shot(board1, player2)
-        shot(board1, ship_stats1, player2, row, col)
-        if is_all_ships_destroyed(board1, ship_stats1):
-            loop = False
-            continue
-
+    if game_mode == 'HUMAN-HUMAN':
+        while loop:
+            clear()
+            print_boards(board1, board2, player1, player2)
+            row, col = get_player_target_for_shot(board2, player1)
+            shot(board2, ship_stats2, player1, row, col)
+            if is_all_ships_destroyed(board2, ship_stats2):
+                loop = False
+                continue
+            
+            clear()
+            print_boards(board1, board2, player1, player2)
+            row, col = get_player_target_for_shot(board1, player2)
+            shot(board1, ship_stats1, player2, row, col)
+            if is_all_ships_destroyed(board1, ship_stats1):
+                loop = False
+                continue
+    elif game_mode == 'HUMAN-AI':
+        while loop:
+            clear()
+            print_boards(board1, board2, player1, player2)
+            row, col = get_player_target_for_shot(board2, player1)
+            shot(board2, ship_stats2, player1, row, col)
+            if is_all_ships_destroyed(board2, ship_stats2):
+                loop = False
+                continue
+            
+            clear()
+            print_boards(board1, board2, player1, player2)
+            row, col = get_ai_target_for_shot(board1, ship_stats1, player2)
+            shot(board1, ship_stats1, player2, row, col)
+            if is_all_ships_destroyed(board1, ship_stats1):
+                loop = False
+                continue
 
 def place_ship_horizontally(user_input, board, ships, ship_stats, ship_type, ship_len, col, row):
     board_size = len(board)
@@ -465,7 +603,7 @@ def main():
     ships = {
         'carrier': [5, 1],
         'battleship': [4, 0],
-        'cruiser': [3, 0],
+        'cruiser': [3, 2],
         'destroyer': [2, 0]
     }
     
@@ -557,7 +695,7 @@ def main():
     # Player2 places his ships
     place_ship_loop(board2, player2, ship_stats2, ships)
 
-    game_mode = "HUMAN-HUMAN"
+    game_mode = "HUMAN-AI"
     
     # Reset player's boards
     board1 = board_init(board_size)
