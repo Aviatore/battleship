@@ -652,7 +652,7 @@ def check_all_ships_are_placed(ships):
 
 
 def ai_get_ship_to_be_placed(ships):
-    """..."""
+    """Analysis the 'ships' dictionary and returns the ship type that needs to be placed"""
     for ship_type in ships:
         if ships[ship_type][1] > 0:
             return ship_type
@@ -667,7 +667,7 @@ def get_random_direction():
 
 
 def ai_check_nearby_free_places(board, coord):
-    """..."""
+    """Returns True if in any of the adjacent positions are something else than '0'"""
     BOARD_SIZE = len(board)
     row, col = coord
     
