@@ -165,11 +165,8 @@ def ai_horizontally_pick_coord(board, coords):
     COL = 1
     row = coords[0][ROW]
 
-    if len(coords) > 1:
-        col_index_left_shotted_module = min( map(lambda x : x[1], coords) )
-        col_index_right_shotted_module = max( map(lambda x : x[1], coords) )
-    else:
-        col_index_left_shotted_module = col_index_right_shotted_module = coords[0][COL]
+    col_index_left_shotted_module = min( map(lambda x : x[1], coords) )
+    col_index_right_shotted_module = max( map(lambda x : x[1], coords) )
 
     coords_for_shot = []
     
@@ -189,19 +186,108 @@ def ai_horizontally_pick_coord(board, coords):
             else:
                 coords_for_shot.append([row, col_index_right_shotted_module + 1])
     
-    if len(coords_for_shot) == 0:
-        row = None
-        col = None
-        return row, col
-    elif len(coords_for_shot) == 1:
-        row = coords_for_shot[0][ROW]
-        col = coords_for_shot[0][COL]
-        return row, col
-    else:
-        random_index = random.randrange(len(coords_for_shot))
-        row = coords_for_shot[random_index][ROW]
-        col = coords_for_shot[random_index][COL]
-        return row, col
+    random_index = random.randrange(len(coords_for_shot))
+    row = coords_for_shot[random_index][ROW]
+    col = coords_for_shot[random_index][COL]
+    return row, col   
+
+
+def ai_pick_coord_from_single_hit(board, ship):
+    BOARD_SIZE = len(board)
+    ROW = 0
+    COL = 1
+    row, col = ship['shot'][0]
+
+    valid_shots = []
+
+    if ai_number_of_free_spaces_left_right(board, [row, col]) >= ship['len']:
+        if col > 0:
+            if board[row][col - 1] == '0' and ai_is_not_sunk_above_below(board, [row, col - 1]):
+                if col - 1 > 0:
+                    if board[row][col - 2] in ['M', 'H', '0']:
+                        valid_shots.append([row, col - 1])
+                else:
+                    valid_shots.append([row, col - 1])
+        
+        if col < BOARD_SIZE - 1:
+            if board[row][col + 1] == '0' and ai_is_not_sunk_above_below(board, [row, col + 1]):
+                if col + 1 < BOARD_SIZE - 1:
+                    if board[row][col + 2] in ['M', 'H', '0']:
+                        valid_shots.append([row, col + 1])
+                else:
+                    valid_shots.append([row, col + 1])
+    
+    if ai_number_of_free_spaces_above_below(board, [row, col]) >= ship['len']:
+        if row > 0:
+            if board[row - 1][col] == '0' and ai_is_not_sunk_left_right(board, [row - 1, col]):
+                if row - 1 > 0:
+                    if board[row - 2][col] in ['M', 'H', '0']:
+                        valid_shots.append([row - 1, col])
+                else:
+                    valid_shots.append([row - 1, col])
+        
+        if row < BOARD_SIZE - 1:
+            if board[row + 1][col] == '0' and ai_is_not_sunk_left_right(board, [row + 1, col]):
+                if row + 1 < BOARD_SIZE - 1:
+                    if board[row + 2][col] in ['M', 'H', '0']:
+                        valid_shots.append([row + 1, col])
+                else:
+                    valid_shots.append([row + 1, col])
+    
+    random_index = random.randrange(len(valid_shots))
+    row = valid_shots[random_index][ROW]
+    col = valid_shots[random_index][COL]
+    return row, col
+
+
+def ai_number_of_free_spaces_left_right(board, coord):
+    """Counts free positions on the board on the left and on the right
+       from the position specified by 'coord'"""
+    BOARD_SIZE = len(board)
+    row, col = coord
+
+    free_spaces_number = 0
+    
+    # Count to the left
+    for col_index in range(col - 1, -1, -1):
+        if board[row][col_index] == '0':
+            free_spaces_number += 1
+        else:
+            break
+    
+    # Count to the right
+    for col_index in range(col + 1, BOARD_SIZE):
+        if board[row][col_index] == '0':
+            free_spaces_number += 1
+        else:
+            break
+    
+    return free_spaces_number
+            
+
+def ai_number_of_free_spaces_above_below(board, coord):
+    """Counts free positions on the board above and below
+       of the position specified by 'coord'"""
+    BOARD_SIZE = len(board)
+    row, col = coord
+
+    free_spaces_number = 0
+    
+    # Count above
+    for row_index in range(row + 1, BOARD_SIZE):
+        if board[row_index][col] == '0':
+            free_spaces_number += 1
+        else:
+            break
+
+    # Count below
+    for row_index in range(row - 1, -1, -1):
+        if board[row_index][col] == '0':
+            free_spaces_number += 1
+        else:
+            break
+
+    return free_spaces_number
 
 
 def ai_vertically_pick_coord(board, coords):
@@ -210,11 +296,8 @@ def ai_vertically_pick_coord(board, coords):
     COL = 1
     col = coords[0][COL]
 
-    if len(coords) > 1:
-        row_index_up_shotted_module = min( map(lambda x : x[0], coords) )
-        row_index_down_shotted_module = max( map(lambda x : x[0], coords) )
-    else:
-        row_index_up_shotted_module = row_index_down_shotted_module = coords[0][ROW]
+    row_index_up_shotted_module = min( map(lambda x : x[0], coords) )
+    row_index_down_shotted_module = max( map(lambda x : x[0], coords) )
 
     coords_for_shot = []
 
@@ -234,20 +317,11 @@ def ai_vertically_pick_coord(board, coords):
             else:
                 coords_for_shot.append([row_index_down_shotted_module + 1, col])
 
-    if len(coords_for_shot) == 0:
-        row = None
-        col = None
-        return row, col
-    elif len(coords_for_shot) == 1:
-        row = coords_for_shot[0][ROW]
-        col = coords_for_shot[0][COL]
-        return row, col
-    else:
-        random_index = random.randrange(len(coords_for_shot))
-        row = coords_for_shot[random_index][ROW]
-        col = coords_for_shot[random_index][COL]
-        return row, col
-
+    random_index = random.randrange(len(coords_for_shot))
+    row = coords_for_shot[random_index][ROW]
+    col = coords_for_shot[random_index][COL]
+    return row, col
+    
 
 def ai_get_coords_of_available_shots(board):
     SIZE = len(board)
@@ -310,12 +384,14 @@ def ai_is_shot_valid(board, coord):
 
 
 def get_ai_target_for_shot(opponent_board, oponent_ship_stats, computer):
-    """Pics a valid move"""    
+    """Pics a valid move"""
     row = col = None
 
     for ship_type in oponent_ship_stats.keys():
-        for ship in oponent_ship_stats[ship_type]:       
-            if 1 <= len(ship['shot']) < ship['len']:
+        for ship in oponent_ship_stats[ship_type]:
+            if len(ship['shot']) == 1:
+                row, col = ai_pick_coord_from_single_hit(opponent_board, ship)
+            elif 1 < len(ship['shot']) < ship['len']:
                 if ai_is_ship_placed_horizontally(ship['shot']):
                     row, col = ai_horizontally_pick_coord(opponent_board, ship['shot'])
                 
