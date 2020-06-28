@@ -652,14 +652,16 @@ def place_ship(board, player, ship_stats, ships):
     while user_input is None:
         print(msg)
         msg = ""
+        print("If you want to place your ships automatically, write 'auto' and press ENTER.")
         user_input = input(f"{player['name']}, please give coordinates: ")
         user_input_list = user_input.split(" ")
-
-        
 
         if user_input_list[0] == 'quit':
             print("Good bye!")
             exit()
+        elif user_input_list[0] == 'auto':
+            auto_ship_placement(board, ship_stats, ships)
+            continue
         elif len(user_input_list) != 3:
             user_input = None
             continue
@@ -699,6 +701,33 @@ def place_ship(board, player, ship_stats, ships):
     # DEBUG: Print the content of dictionaries:
     # pprint.pprint(ship_stats)
     # pprint.pprint(ships)
+
+
+def auto_ship_placement(board, ship_stats, ships):
+    BOARD_SIZE = len(board)
+    __ships = copy.deepcopy(ships)
+    loop = True
+
+    while loop:
+        user_input = None
+        clear()
+        ai_place_ship(board, ship_stats, ships)
+        print_board(board)
+        while user_input is None:
+            user_input = input("Place ships again? ([y]/n): ")
+            if user_input.upper() in ['Y', 'N', ""]:
+                if user_input.upper() in ['Y', ""]:
+                    for row in range(BOARD_SIZE):
+                        for col in range(BOARD_SIZE):
+                            board[row][col] = '0'
+                    for ship_type in ship_stats:
+                        ship_stats[ship_type] = []
+                    for ship_type in __ships:
+                        ships[ship_type][1] = __ships[ship_type][1]
+                else:
+                    return
+            else:
+                user_input = None
 
 
 def check_all_ships_are_placed(ships):
@@ -817,6 +846,10 @@ def ai_place_ship(board, ship_stats, ships):
             }
             counter = 0
         counter += 1
+    
+    # Edit the reference of 'ships'
+    for ship_type in __ships:
+        ships[ship_type][1] = 0
 
 
 def place_ship_loop(board, player, ship_stats, ships):
@@ -827,6 +860,12 @@ def place_ship_loop(board, player, ship_stats, ships):
         print_board(board)
         print_table(__ships, 5, 24)
         place_ship(board, player, ship_stats, __ships)
+    
+    clear()
+    print_board(board)
+    print_table(__ships, 5, 24)
+    print("")
+    input("All your ships are on positions. Press ENTER to continue ...")
 
 
 def main():
@@ -945,18 +984,17 @@ def main():
     #     }
 
     # Player1 places his ships
-    # place_ship_loop(board1, player1, ship_stats1, ships)
+    place_ship_loop(board1, player1, ship_stats1, ships)
     
-    ai_place_ship(board1, ship_stats1, ships)
-    print_board(board1)
+    # ai_place_ship(board1, ship_stats1, ships)
+    # print_board(board1)
     # pprint.pprint(ship_stats1)
-    input("Player1 board, press any key to continue ...")
+    # input("Player1 board, press any key to continue ...")
     # Player2 places his ships
     # place_ship_loop(board2, player2, ship_stats2, ships)
 
     ai_place_ship(board2, ship_stats2, ships)
     print_board(board2)
-    # pprint.pprint(ship_stats2)
     input("Computer board, press any key to continue ...")
 
     game_mode = "HUMAN-AI"
