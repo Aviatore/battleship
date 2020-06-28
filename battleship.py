@@ -628,6 +628,13 @@ def place_ship_vertically(user_input, board, ships, ship_stats, ship_type, ship_
         return "", ""
 
 
+def is_ship_type_correct(ships, ship_name):
+    for ship_type in ships:
+        if not ship_type.find(ship_name) and ships[ship_type][1] > 0:
+            return ship_type
+    return None          
+
+
 def place_ship(board, player, ship_stats, ships):
     """Controls the placement phase.
        Asks the player for coordinates, ship type and direction (h - horizontal or v - vertical), e.g. b2 cruiser h.
@@ -674,9 +681,14 @@ def place_ship(board, player, ship_stats, ships):
         if ROW.upper() not in rows or COL not in cols_str:
             user_input = None
             continue
-        elif SHIP_TYPE not in ['carrier', 'battleship', 'cruiser', 'destroyer']:
+
+        SHIP_TYPE = is_ship_type_correct(ships, SHIP_TYPE)
+        if SHIP_TYPE is None:
             user_input = None
             continue
+        # elif SHIP_TYPE not in ['carrier', 'battleship', 'cruiser', 'destroyer']:
+        #     user_input = None
+        #     continue
         elif DIRECTION not in ['h', 'v']:
             user_input = None
             continue
