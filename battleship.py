@@ -4,6 +4,9 @@ from os import system
 import random
 
 
+AI_MODE = "normal" # if 'god_like' while picking a shot AI takes into account the ship length
+
+
 def go_to_point(row, col):
     return f"\033[{row};{col}H"
 
@@ -240,6 +243,52 @@ def ai_pick_coord_from_single_hit(board, ship):
     return row, col
 
 
+def ai_pick_coord_from_single_hit_normal_mode(board, coord):
+    BOARD_SIZE = len(board)
+    ROW = 0
+    COL = 1
+    row, col = coord
+
+    valid_shots = []
+
+    if col > 0:
+        if board[row][col - 1] == '0' and ai_is_not_sunk_above_below(board, [row, col - 1]):
+            if col - 1 > 0:
+                if board[row][col - 2] in ['M', 'H', '0']:
+                    valid_shots.append([row, col - 1])
+            else:
+                valid_shots.append([row, col - 1])
+    
+    if col < BOARD_SIZE - 1:
+        if board[row][col + 1] == '0' and ai_is_not_sunk_above_below(board, [row, col + 1]):
+            if col + 1 < BOARD_SIZE - 1:
+                if board[row][col + 2] in ['M', 'H', '0']:
+                    valid_shots.append([row, col + 1])
+            else:
+                valid_shots.append([row, col + 1])
+    
+    if row > 0:
+        if board[row - 1][col] == '0' and ai_is_not_sunk_left_right(board, [row - 1, col]):
+            if row - 1 > 0:
+                if board[row - 2][col] in ['M', 'H', '0']:
+                    valid_shots.append([row - 1, col])
+            else:
+                valid_shots.append([row - 1, col])
+    
+    if row < BOARD_SIZE - 1:
+        if board[row + 1][col] == '0' and ai_is_not_sunk_left_right(board, [row + 1, col]):
+            if row + 1 < BOARD_SIZE - 1:
+                if board[row + 2][col] in ['M', 'H', '0']:
+                    valid_shots.append([row + 1, col])
+            else:
+                valid_shots.append([row + 1, col])
+    
+    random_index = random.randrange(len(valid_shots))
+    row = valid_shots[random_index][ROW]
+    col = valid_shots[random_index][COL]
+    return row, col
+
+
 def ai_number_of_free_spaces_left_right(board, coord):
     """Counts free positions on the board on the left and on the right
        from the position specified by 'coord'"""
@@ -387,16 +436,28 @@ def get_ai_target_for_shot(opponent_board, oponent_ship_stats, computer):
     """Pics a valid move"""
     row = col = None
 
-    for ship_type in oponent_ship_stats.keys():
-        for ship in oponent_ship_stats[ship_type]:
-            if len(ship['shot']) == 1:
-                row, col = ai_pick_coord_from_single_hit(opponent_board, ship)
-            elif 1 < len(ship['shot']) < ship['len']:
-                if ai_is_ship_placed_horizontally(ship['shot']):
-                    row, col = ai_horizontally_pick_coord(opponent_board, ship['shot'])
-                
-                if row is None:
-                    row, col = ai_vertically_pick_coord(opponent_board, ship['shot'])
+    if AI_MODE == "god_like":
+        for ship_type in oponent_ship_stats.keys():
+            for ship in oponent_ship_stats[ship_type]:
+                if len(ship['shot']) == 1:
+                    row, col = ai_pick_coord_from_single_hit(opponent_board, ship)
+                elif 1 < len(ship['shot']) < ship['len']:
+                    if ai_is_ship_placed_horizontally(ship['shot']):
+                        row, col = ai_horizontally_pick_coord(opponent_board, ship['shot'])
+                    
+                    if row is None:
+                        row, col = ai_vertically_pick_coord(opponent_board, ship['shot'])
+    else:
+        for ship_type in oponent_ship_stats.keys():
+            for ship in oponent_ship_stats[ship_type]:
+                if len(ship['shot']) == 1:
+                    row, col = ai_pick_coord_from_single_hit_normal_mode(opponent_board, ship['shot'][0])
+                elif 1 < len(ship['shot']) < ship['len']:
+                    if ai_is_ship_placed_horizontally(ship['shot']):
+                        row, col = ai_horizontally_pick_coord(opponent_board, ship['shot'])
+                    
+                    if row is None:
+                        row, col = ai_vertically_pick_coord(opponent_board, ship['shot'])
     
     if row is None or col is None:
         valid_shots = ai_get_coords_of_available_shots(opponent_board)
@@ -696,6 +757,7 @@ def ai_place_ship(board, ship_stats, ships):
 
     __ships = copy.deepcopy(ships)
     
+    counter = 0
     ship_type = ai_get_ship_to_be_placed(__ships)
     while ship_type:
         direction = get_random_direction()
@@ -742,6 +804,19 @@ def ai_place_ship(board, ship_stats, ships):
                 __ships[ship_type][SHIP_NUM] -= 1
         
         ship_type = ai_get_ship_to_be_placed(__ships)
+        
+        # Preventing from infinite loop. Some ships distribution may make it impossible to place all ships.
+        if counter > 100:
+            board = board_init(BOARD_SIZE) # Reset the board
+            __ships = copy.deepcopy(ships) # Reset the __ships
+            ship_stats = {
+                'carrier': [],
+                'battleship': [],
+                'cruiser': [],
+                'destroyer': []
+            }
+            counter = 0
+        counter += 1
 
 
 def place_ship_loop(board, player, ship_stats, ships):
@@ -857,25 +932,32 @@ def main():
     # exit()
 
     # DEBUG: Computer places his ship
-    while True:
-        ai_place_ship(board2, ship_stats2, ships)
-        print_board(board2)
-        input("Press any key to continue ...")
-        board2 = board_init(board_size)
-        ship_stats2 = {
-            'carrier': [],
-            'battleship': [],
-            'cruiser': [],
-            'destroyer': []
-        }
+    # while True:
+    #     ai_place_ship(board2, ship_stats2, ships)
+    #     print_board(board2)
+    #     input("Press any key to continue ...")
+    #     board2 = board_init(board_size)
+    #     ship_stats2 = {
+    #         'carrier': [],
+    #         'battleship': [],
+    #         'cruiser': [],
+    #         'destroyer': []
+    #     }
 
     # Player1 places his ships
-    place_ship_loop(board1, player1, ship_stats1, ships)
+    # place_ship_loop(board1, player1, ship_stats1, ships)
     
+    ai_place_ship(board1, ship_stats1, ships)
+    print_board(board1)
+    # pprint.pprint(ship_stats1)
+    input("Player1 board, press any key to continue ...")
     # Player2 places his ships
-    place_ship_loop(board2, player2, ship_stats2, ships)
+    # place_ship_loop(board2, player2, ship_stats2, ships)
 
-    
+    ai_place_ship(board2, ship_stats2, ships)
+    print_board(board2)
+    # pprint.pprint(ship_stats2)
+    input("Computer board, press any key to continue ...")
 
     game_mode = "HUMAN-AI"
     
