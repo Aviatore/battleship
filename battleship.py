@@ -671,6 +671,8 @@ def ai_check_nearby_free_places(board, coord):
     BOARD_SIZE = len(board)
     row, col = coord
     
+    if board[row][col] != '0':
+        return True
     if col > 0:
         if board[row][col - 1] != '0':
             return True
@@ -693,7 +695,6 @@ def ai_place_ship(board, ship_stats, ships):
     BOARD_SIZE = len(board)
 
     __ships = copy.deepcopy(ships)
-    used_coords = []
     
     ship_type = ai_get_ship_to_be_placed(__ships)
     while ship_type:
@@ -703,14 +704,13 @@ def ai_place_ship(board, ship_stats, ships):
             col_random = random.randrange(BOARD_SIZE - __ships[ship_type][SHIP_LEN] + 1)
 
             for i in range(__ships[ship_type][SHIP_LEN]):
-                if [row_random, col_random + i] in used_coords or ai_check_nearby_free_places(board, [row_random, col_random + i]):
+                if ai_check_nearby_free_places(board, [row_random, col_random + i]):
                     break
             else:
                 coords = []
                 for i in range(__ships[ship_type][SHIP_LEN]):
                     board[row_random][col_random + i] = 'X'
                     coords.append([row_random, col_random + i])
-                    used_coords.append([row_random, col_random + i])
 
                 ship = {
                     'coord': coords,
@@ -725,14 +725,13 @@ def ai_place_ship(board, ship_stats, ships):
             row_random = random.randrange(BOARD_SIZE - __ships[ship_type][SHIP_LEN] + 1)
 
             for i in range(__ships[ship_type][SHIP_LEN]):
-                if [row_random + i, col_random] in used_coords or ai_check_nearby_free_places(board, [row_random + i, col_random]):
+                if ai_check_nearby_free_places(board, [row_random + i, col_random]):
                     break
             else:
                 coords = []
                 for i in range(__ships[ship_type][SHIP_LEN]):
                     board[row_random + i][col_random] = 'X'
                     coords.append([row_random + i, col_random])
-                    used_coords.append([row_random + i, col_random])
 
                 ship = {
                     'coord': coords,
@@ -763,19 +762,19 @@ def main():
     # Declaration of ship types. The lists contain two values:
     # - first, corresponds to the ship's size
     # - second, corresponds to the number of ship units that can be placed on board
-    # ships = {
-    #     'carrier': [5, 1],
-    #     'battleship': [4, 2],
-    #     'cruiser': [3, 3],
-    #     'destroyer': [2, 4]
-    # }
-
     ships = {
         'carrier': [5, 1],
-        'battleship': [4, 0],
-        'cruiser': [3, 2],
-        'destroyer': [2, 0]
+        'battleship': [4, 2],
+        'cruiser': [3, 3],
+        'destroyer': [2, 4]
     }
+
+    # ships = {
+    #     'carrier': [5, 1],
+    #     'battleship': [4, 0],
+    #     'cruiser': [3, 2],
+    #     'destroyer': [2, 0]
+    # }
     
     player1 = {
         'name': 'Ryland Hailey',
@@ -858,17 +857,17 @@ def main():
     # exit()
 
     # DEBUG: Computer places his ship
-    # while True:
-    #     ai_place_ship(board2, ship_stats2, ships)
-    #     print_board(board2)
-    #     input("Press any key to continue ...")
-    #     board2 = board_init(board_size)
-    #     ship_stats2 = {
-    #         'carrier': [],
-    #         'battleship': [],
-    #         'cruiser': [],
-    #         'destroyer': []
-    #     }
+    while True:
+        ai_place_ship(board2, ship_stats2, ships)
+        print_board(board2)
+        input("Press any key to continue ...")
+        board2 = board_init(board_size)
+        ship_stats2 = {
+            'carrier': [],
+            'battleship': [],
+            'cruiser': [],
+            'destroyer': []
+        }
 
     # Player1 places his ships
     place_ship_loop(board1, player1, ship_stats1, ships)
