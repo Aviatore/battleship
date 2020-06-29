@@ -479,12 +479,13 @@ def shot(opponent_board, oponent_ship_stats, player, row, col):
                 if ship['len'] == len(ship['shot']):
                     for cord in ship['shot']:
                         opponent_board[cord[0]][cord[1]] = 'S'
-                    return
+                    return 'S'
                 else:
                     opponent_board[row][col] = 'H'
-                    return
+                    return 'H'
     else:
         opponent_board[row][col] = 'M'
+        return 'M'
 
 
 def is_all_ships_destroyed(board, ship_stats):
@@ -493,40 +494,93 @@ def is_all_ships_destroyed(board, ship_stats):
     pass
 
 
+def coordinates_index_to_string(row, col):
+    rows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I']
+
+    cols = []
+    for col_index in range(len(rows)):
+        cols.append(col_index + 1)
+    cols_str = list(map(str, cols))
+    
+    output = rows[row] + cols_str[col]
+    return output    
+
+
+def shot_msg(shot_result, player_name, row, col):
+    if shot_result == 'H':
+        return f"{player_name} has hit a ship at {coordinates_index_to_string(row, col)}!"
+    elif shot_result == 'M':
+        return f"{player_name} has missed at {coordinates_index_to_string(row, col)}!"
+    elif shot_result == 'S':
+        return f"{player_name} has sunk a ship by a shot at {coordinates_index_to_string(row, col)}!"
+
+
 def battleship_game(board1, board2, ship_stats1, ship_stats2, game_mode, player1, player2):
     """Game logic."""
     loop = True
     if game_mode == 'HUMAN-HUMAN':
+        msg1 = ""
+        msg2 = ""
         while loop:
             clear()
             print_boards(board1, board2, player1, player2)
+            if msg2 != "":
+                print("")
+                print(msg2)
+                msg2 = ""
+
             row, col = get_player_target_for_shot(board2, player1)
-            shot(board2, ship_stats2, player1, row, col)
+
+            shot_result = shot(board2, ship_stats2, player1, row, col)
+            msg1 = shot_msg(shot_result, player1['name'], row, col)
+
             if is_all_ships_destroyed(board2, ship_stats2):
                 loop = False
                 continue
             
             clear()
             print_boards(board1, board2, player1, player2)
+            if msg1 != "":
+                print("")
+                print(msg1)
+                msg1 = ""
             row, col = get_player_target_for_shot(board1, player2)
-            shot(board1, ship_stats1, player2, row, col)
+
+            shot_result = shot(board1, ship_stats1, player2, row, col)
+            msg2 = shot_msg(shot_result, player2['name'], row, col)
+
             if is_all_ships_destroyed(board1, ship_stats1):
                 loop = False
                 continue
     elif game_mode == 'HUMAN-AI':
+        msg1 = ""
+        msg2 = ""
         while loop:
             clear()
             print_boards(board1, board2, player1, player2)
+            print("")
+            print(msg1)
+            print(msg2)
+            msg1 = ""
+            msg2 = ""
+
             row, col = get_player_target_for_shot(board2, player1)
-            shot(board2, ship_stats2, player1, row, col)
+
+            shot_result = shot(board2, ship_stats2, player1, row, col)
+            msg1 = shot_msg(shot_result, player1['name'], row, col)
+
             if is_all_ships_destroyed(board2, ship_stats2):
                 loop = False
                 continue
             
             clear()
             print_boards(board1, board2, player1, player2)
+            
             row, col = get_ai_target_for_shot(board1, ship_stats1, player2)
-            shot(board1, ship_stats1, player2, row, col)
+
+            shot_result = shot(board1, ship_stats1, player2, row, col)
+            msg2 = shot_msg(shot_result, player2['name'], row, col)
+
             if is_all_ships_destroyed(board1, ship_stats1):
                 loop = False
                 continue
@@ -1009,7 +1063,7 @@ def main():
     print_board(board2)
     input("Computer board, press any key to continue ...")
 
-    game_mode = "HUMAN-AI"
+    game_mode = "HUMAN-HUMAN"
     
     # Reset player's boards
     board1 = board_init(board_size)
