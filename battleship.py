@@ -47,7 +47,7 @@ def print_board(board):
     print("")
 
 
-def print_board_mod(board, row, col, player):
+def print_board_mod(board, row, col, player_name=""):
     """Prints board to the screen during the placement phase."""
     __row = row
     __col = col
@@ -65,7 +65,7 @@ def print_board_mod(board, row, col, player):
     for row_index in range(row_len):
         rows.append(rows_template[row_index])
     
-    print(f"{go_to_point(__row, __col)}{player['name']}")
+    print(f"{go_to_point(__row, __col)}{player_name}")
     __row += 1
     print(f"{go_to_point(__row, __col)}  {' '.join(cols_str)}")
     __row += 1
@@ -103,8 +103,8 @@ def print_boards(board1, board2, player1, player2):
     BOARD1_COL = 1
     BOARD2_ROW = 1
     BOARD2_COL = 24
-    print_board_mod(board1, BOARD1_ROW, BOARD1_COL, player1)
-    print_board_mod(board2, BOARD2_ROW, BOARD2_COL, player2)
+    print_board_mod(board1, BOARD1_ROW, BOARD1_COL, player1['name'])
+    print_board_mod(board2, BOARD2_ROW, BOARD2_COL, player2['name'])
 
 
 def get_player_target_for_shot(opponent_board, player):
@@ -935,22 +935,35 @@ def ai_place_ship(board, ship_stats, ships):
 
 def place_ship_loop(board, player, ship_stats, ships):
     __ships = copy.deepcopy(ships)
-    
+    BOARD_SIZE = len(board)
+    TABLE_ROWS_NUMBER = 8
+    TABLE_Y_OFFSET = BOARD_SIZE - TABLE_ROWS_NUMBER + 2
+    if TABLE_Y_OFFSET < 0:
+        TABLE_Y_OFFSET = 1
+    TABLE_X_OFFSET = (BOARD_SIZE * 2) - 1 + 2 + 4
+
+    if BOARD_SIZE < TABLE_ROWS_NUMBER:
+        BOARD_Y_OFFSET = TABLE_ROWS_NUMBER - BOARD_SIZE - 1
+    else:
+        BOARD_Y_OFFSET = 1
+    BOARD_X_OFFSET = 1
+
     while check_all_ships_are_placed(__ships):
         clear()
-        print_board(board)
-        print_table(__ships, 3, 24, player['name'])
+        print_board_mod(board, BOARD_Y_OFFSET, BOARD_X_OFFSET)
+        # print_board(board)
+        print_table(__ships, TABLE_Y_OFFSET, TABLE_X_OFFSET, player['name'])
         place_ship(board, player, ship_stats, __ships)
     
     clear()
     print_board(board)
-    print_table(__ships, 3, 24, player['name'])
+    print_table(__ships, TABLE_Y_OFFSET, TABLE_X_OFFSET, player['name'])
     print("")
     input("All your ships are on positions. Press ENTER to continue ...")
 
 
 def main():
-    board_size = 9
+    board_size = 7
     board1 = board_init(board_size)
     board2 = board_init(board_size)
     
