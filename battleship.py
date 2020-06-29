@@ -105,9 +105,9 @@ def print_boards(board1, board2, player1, player2):
     SPACING = 4
 
     if BOARD_SIZE < TABLE_ROWS_NUMBER:
-        BOARD_Y_OFFSET = TABLE_ROWS_NUMBER - BOARD_SIZE - 0
+        BOARD_Y_OFFSET = TABLE_ROWS_NUMBER - BOARD_SIZE + 2
     else:
-        BOARD_Y_OFFSET = 1
+        BOARD_Y_OFFSET = 3
 
     BOARD_X_OFFSET = TABLE_LENGTH + SPACING
 
@@ -553,8 +553,9 @@ def battleship_game(board1, board2, ship_stats1, ship_stats2, game_mode, player1
     SPACING = 4
     TABLE_WIDTH = len("-------+------------+------------")
     TABLE_ROWS_NUMBER = 8
+    CONTENT_WIDTH = (TABLE_WIDTH * 2) + (SPACING * 3) + (((BOARD_SIZE * 2) + 2) * 2)
 
-    TABLE_Y_OFFSET = BOARD_SIZE + 2 - TABLE_ROWS_NUMBER + 1
+    TABLE_Y_OFFSET = BOARD_SIZE + 2 - TABLE_ROWS_NUMBER + 1 + 2
     if TABLE_Y_OFFSET < 2:
         TABLE_Y_OFFSET = 2
 
@@ -567,6 +568,10 @@ def battleship_game(board1, board2, ship_stats1, ship_stats2, game_mode, player1
         msg2 = ""
         while turns_limit > 0:
             clear()
+            turns_msg = f"Turns left: {turns_limit}"
+
+            print(turns_msg.center(CONTENT_WIDTH))
+
             ships = update_ships(ship_stats1)
             print_table(ships, TABLE_Y_OFFSET, TABLE1_X_OFFSET, player1['name'])
             print_boards(board1, board2, player1, player2)
@@ -587,6 +592,10 @@ def battleship_game(board1, board2, ship_stats1, ship_stats2, game_mode, player1
                 continue
             
             clear()
+            turns_msg = f"Turns left: {turns_limit}"
+
+            print(turns_msg.center(CONTENT_WIDTH))
+
             ships = update_ships(ship_stats1)
             print_table(ships, TABLE_Y_OFFSET, TABLE1_X_OFFSET, player1['name'])
             print_boards(board1, board2, player1, player2)
@@ -614,6 +623,10 @@ def battleship_game(board1, board2, ship_stats1, ship_stats2, game_mode, player1
         msg2 = ""
         while turns_limit > 0:
             clear()
+            turns_msg = f"Turns left: {turns_limit}"
+
+            print(turns_msg.center(CONTENT_WIDTH))
+
             ships = update_ships(ship_stats1)
             print_table(ships, TABLE_Y_OFFSET, TABLE1_X_OFFSET, player1['name'])
             print_boards(board1, board2, player1, player2)
@@ -636,7 +649,11 @@ def battleship_game(board1, board2, ship_stats1, ship_stats2, game_mode, player1
                 continue
             
             clear()
+            ships = update_ships(ship_stats1)
+            print_table(ships, TABLE_Y_OFFSET, TABLE1_X_OFFSET, player1['name'])
             print_boards(board1, board2, player1, player2)
+            ships = update_ships(ship_stats2)
+            print_table(ships, TABLE_Y_OFFSET, TABLE2_X_OFFSET, player2['name'])
             
             row, col = get_ai_target_for_shot(board1, ship_stats1, player2)
 
@@ -649,6 +666,7 @@ def battleship_game(board1, board2, ship_stats1, ship_stats2, game_mode, player1
 
             turns_limit -= 1
         
+        print("")
         print("No more turns, it's a draw!")
 
 def place_ship_horizontally(user_input, board, ships, ship_stats, ship_type, ship_len, col, row):
