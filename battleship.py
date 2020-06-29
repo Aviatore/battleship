@@ -515,13 +515,13 @@ def shot_msg(shot_result, player_name, row, col):
         return f"{player_name} has sunk a ship by a shot at {coordinates_index_to_string(row, col)}!"
 
 
-def battleship_game(board1, board2, ship_stats1, ship_stats2, game_mode, player1, player2):
+def battleship_game(board1, board2, ship_stats1, ship_stats2, game_mode, player1, player2, turns_limit):
     """Game logic."""
     loop = True
     if game_mode == 'HUMAN-HUMAN':
         msg1 = ""
         msg2 = ""
-        while loop:
+        while turns_limit > 0:
             clear()
             print_boards(board1, board2, player1, player2)
             if msg2 != "":
@@ -552,10 +552,15 @@ def battleship_game(board1, board2, ship_stats1, ship_stats2, game_mode, player1
             if is_all_ships_destroyed(board1, ship_stats1):
                 loop = False
                 continue
+            
+            turns_limit -= 1
+        
+        print("No more turns, it's a draw!")
+
     elif game_mode == 'HUMAN-AI':
         msg1 = ""
         msg2 = ""
-        while loop:
+        while turns_limit > 0:
             clear()
             print_boards(board1, board2, player1, player2)
             print("")
@@ -584,6 +589,10 @@ def battleship_game(board1, board2, ship_stats1, ship_stats2, game_mode, player1
             if is_all_ships_destroyed(board1, ship_stats1):
                 loop = False
                 continue
+
+            turns_limit -= 1
+        
+        print("No more turns, it's a draw!")
 
 def place_ship_horizontally(user_input, board, ships, ship_stats, ship_type, ship_len, col, row):
     board_size = len(board)
@@ -991,6 +1000,8 @@ def main():
         'destroyer': []
     }
     
+    turns_limit = 3
+    
     # ship_stats1_tmp = {
     #     'carrier': {
     #         'coord': [],
@@ -1063,13 +1074,13 @@ def main():
     print_board(board2)
     input("Computer board, press any key to continue ...")
 
-    game_mode = "HUMAN-HUMAN"
+    game_mode = "HUMAN-AI"
     
     # Reset player's boards
     board1 = board_init(board_size)
     board2 = board_init(board_size)
     
-    battleship_game(board1, board2, ship_stats1, ship_stats2, game_mode, player1, player2)
+    battleship_game(board1, board2, ship_stats1, ship_stats2, game_mode, player1, player2, turns_limit)
     
 
 main()
