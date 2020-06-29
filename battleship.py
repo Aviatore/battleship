@@ -650,6 +650,13 @@ def battleship_game(board1, board2, ship_stats1, ship_stats2, game_mode, player1
 
             if is_all_ships_destroyed(board2, ship_stats2):
                 loop = False
+                clear()
+                ships = update_ships(ship_stats1)
+                print_table(ships, TABLE_Y_OFFSET, TABLE1_X_OFFSET, player1['name'])
+                print_boards(board1, board2, player1, player2)
+                ships = update_ships(ship_stats2)
+                print_table(ships, TABLE_Y_OFFSET, TABLE2_X_OFFSET, player2['name'])
+                print_summary_message(BOARD_SIZE, game_mode, player1['name'])
                 continue
             
             clear()
@@ -673,6 +680,13 @@ def battleship_game(board1, board2, ship_stats1, ship_stats2, game_mode, player1
 
             if is_all_ships_destroyed(board1, ship_stats1):
                 loop = False
+                clear()
+                ships = update_ships(ship_stats1)
+                print_table(ships, TABLE_Y_OFFSET, TABLE1_X_OFFSET, player1['name'])
+                print_boards(board1, board2, player1, player2)
+                ships = update_ships(ship_stats2)
+                print_table(ships, TABLE_Y_OFFSET, TABLE2_X_OFFSET, player2['name'])
+                print_summary_message(BOARD_SIZE, game_mode, player2['name'])
                 continue
             
             turns_limit -= 1
@@ -707,6 +721,12 @@ def battleship_game(board1, board2, ship_stats1, ship_stats2, game_mode, player1
 
             if is_all_ships_destroyed(board2, ship_stats2):
                 loop = False
+                clear()
+                ships = update_ships(ship_stats1)
+                print_table(ships, TABLE_Y_OFFSET, TABLE1_X_OFFSET, player1['name'])
+                print_boards(board1, board2, player1, player2)
+                ships = update_ships(ship_stats2)
+                print_table(ships, TABLE_Y_OFFSET, TABLE2_X_OFFSET, player2['name'])
                 print_summary_message(BOARD_SIZE, game_mode, player1['name'])
                 continue
             
@@ -729,6 +749,12 @@ def battleship_game(board1, board2, ship_stats1, ship_stats2, game_mode, player1
 
             turns_limit -= 1
         
+        clear()
+        ships = update_ships(ship_stats1)
+        print_table(ships, TABLE_Y_OFFSET, TABLE1_X_OFFSET, player1['name'])
+        print_boards(board1, board2, player1, player2)
+        ships = update_ships(ship_stats2)
+        print_table(ships, TABLE_Y_OFFSET, TABLE2_X_OFFSET, player2['name'])
         print_summary_message(BOARD_SIZE, game_mode)
 
 def place_ship_horizontally(user_input, board, ships, ship_stats, ship_type, ship_len, col, row):
@@ -938,13 +964,14 @@ def auto_ship_placement(board, ship_stats, ships):
                     for ship_type in __ships:
                         ships[ship_type][1] = __ships[ship_type][1]
                 else:
+                    # Edit the reference of 'ships'
+                    for ship_type in __ships:
+                        ships[ship_type][1] = 0
                     return
             else:
                 user_input = None
     
-    # Edit the reference of 'ships'
-    for ship_type in __ships:
-        ships[ship_type][1] = 0
+    
 
 
 def check_all_ships_are_placed(ships):
