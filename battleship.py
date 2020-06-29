@@ -109,7 +109,7 @@ def print_table(ships, row, col, player_name):
     __row += 1
     print(f"{go_to_point(__row, __col)}-------+------------+------------")
     __row += 1
-    print(f"{go_to_point(__row, __col)}amount | ship type  | ship length")
+    print(f"{go_to_point(__row, __col)}Amount | Ship type  | Ship length")
     __row += 1
     print(f"{go_to_point(__row, __col)}-------+------------+------------")
     __row += 1
@@ -165,7 +165,8 @@ def get_player_target_for_shot(opponent_board, player):
     while user_input is None:
         print(msg)
         msg = ""
-        user_input = input(f"{player['name']}, please give coordinates: ")
+        print(f"{player['name']}, give coordinates for the shot: ")
+        user_input = input("> ")
 
         ROW = user_input[0] # The row letter
         COL = user_input[1] # The col number
@@ -886,7 +887,8 @@ def place_ship(board, player, ship_stats, ships):
         print(msg)
         msg = ""
         print("If you want to place your ships automatically, write 'auto' and press ENTER.")
-        user_input = input(f"{player['name']}, please give coordinates: ")
+        print(f"{player['name']}, give coordinates, type and direction of your ship: ")
+        user_input = input("> ")
         user_input_list = user_input.split(" ")
 
         if user_input_list[0] == 'quit':
