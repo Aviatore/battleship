@@ -76,11 +76,17 @@ def print_board_mod(board, row, col, player):
     print("")
 
 
-def print_table(ships, row, col):
+def print_table(ships, row, col, player_name):
     COL1_LEN = 7
     COL2_LEN = 10
+    TABLE_WIDTH = len("-------+------------+------------")
     __row = row
     __col = col
+    table_title = f"{player_name}'s ship stats"
+    print(f"{go_to_point(__row, __col)}{table_title.center(TABLE_WIDTH)}")
+    __row += 1
+    print(f"{go_to_point(__row, __col)}-------+------------+------------")
+    __row += 1
     print(f"{go_to_point(__row, __col)}amount | ship type  | ship length")
     __row += 1
     print(f"{go_to_point(__row, __col)}-------+------------+------------")
@@ -933,12 +939,12 @@ def place_ship_loop(board, player, ship_stats, ships):
     while check_all_ships_are_placed(__ships):
         clear()
         print_board(board)
-        print_table(__ships, 5, 24)
+        print_table(__ships, 3, 24, player['name'])
         place_ship(board, player, ship_stats, __ships)
     
     clear()
     print_board(board)
-    print_table(__ships, 5, 24)
+    print_table(__ships, 3, 24, player['name'])
     print("")
     input("All your ships are on positions. Press ENTER to continue ...")
 
