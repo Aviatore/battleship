@@ -509,7 +509,11 @@ def shot(opponent_board, oponent_ship_stats, player, row, col):
 def is_all_ships_destroyed(board, ship_stats):
     """Checks if all ships are destroyed.
        The 'board' variable can be used to mark all sunk ships with a color."""
-    pass
+    for ship_type in ship_stats:
+        for ship in ship_stats[ship_type]:
+            if len(ship['shot']) != ship['len']:
+                return False
+    return True
 
 
 def coordinates_index_to_string(row, col):
@@ -545,6 +549,41 @@ def update_ships(ship_stats):
         ships[ship_type][1] = len(ship_stats[ship_type])
     
     return ships
+
+
+def save_cursor_position():
+    print("\033[s", end="")
+
+def restore_cursor_position():
+    print("\033[u\033[0K", end="")
+
+
+def print_summary_message(board_size, game_mode, player_name=None):
+    print("")
+    if player_name is None:
+        print("No more turns, it's a draw!")
+    else:
+        print(f"{player_name} won the game!")
+    
+    print("")
+    print("If you want to play another game, write 'y'.")
+    print("If you want to go back to main menu, write 'm'.")
+    print("If you want to quit the game, write 'quit' or 'q'.")
+    print("")
+    save_cursor_position()
+    user_input = None
+    while user_input is None:
+        restore_cursor_position()
+        user_input = input("> ")
+        if user_input not in ['y', 'm', 'q', 'quit']:
+            user_input = None
+        elif user_input == 'y':
+            main(board_size, game_mode)
+        elif user_input == 'm':
+            pass
+        elif user_input in ['quit', 'q']:
+            print("Good bye!")
+            exit()
 
 
 def battleship_game(board1, board2, ship_stats1, ship_stats2, game_mode, player1, player2, turns_limit):
@@ -646,6 +685,7 @@ def battleship_game(board1, board2, ship_stats1, ship_stats2, game_mode, player1
 
             if is_all_ships_destroyed(board2, ship_stats2):
                 loop = False
+                print_summary_message(BOARD_SIZE, game_mode, player1['name'])
                 continue
             
             clear()
@@ -662,12 +702,12 @@ def battleship_game(board1, board2, ship_stats1, ship_stats2, game_mode, player1
 
             if is_all_ships_destroyed(board1, ship_stats1):
                 loop = False
+                print_summary_message(BOARD_SIZE, game_mode, player2['name'])
                 continue
 
             turns_limit -= 1
         
-        print("")
-        print("No more turns, it's a draw!")
+        print_summary_message(BOARD_SIZE, game_mode)
 
 def place_ship_horizontally(user_input, board, ships, ship_stats, ship_type, ship_len, col, row):
     board_size = len(board)
@@ -1032,8 +1072,8 @@ def place_ship_loop(board, player, ship_stats, ships):
     input("All your ships are on positions. Press ENTER to continue ...")
 
 
-def main():
-    board_size = 7
+def main(board_size=9, game_mode="HUMAN-AI"):
+    # board_size = 7
     board1 = board_init(board_size)
     board2 = board_init(board_size)
     
@@ -1064,17 +1104,17 @@ def main():
     }
     
     # Declaration of dictionary that contains data about player's ships.
-    # The 'coord' key contains a list of coordinates of every ship of its kind, e.g. [ [ [1,1],[1,2] ], [ [3,3],[3,4] ] ]
-    # [
-    #     [
-    #         [1,1], [1,2] # First 'destroyer'
-    #     ],
-    #     [
-    #         [3,3], [3,4] # Second 'destroyer'
-    #     ],
-    # ]
-    # The 'num' key contains the number of ships of its kind. Whenever a ship is sunk, the number is decreased by one.
-    # The function 'is_all_ships_destroyed(board, ship_stats)' checks this value to check if all ships were destroyed.
+    # Each key corresponds to the ship type and contains a list of dictionaries 
+    # with a ship data.
+    # The structure of the example ship dictionary:
+    # ship = {
+    #         'coord': [[1,1],[1,2],[1,3]],
+    #         'shot': [[1,2]],
+    #         'len': 3
+    #     }
+    # The 'coord' key contains a nested list with coordinates of every ship module.
+    # The 'shot' key contains a nested list with coordinates of shot modules.
+    # The 'len' key contains a number of ship modules.
     ship_stats1 = {
         'carrier': [],
         'battleship': [],
@@ -1090,44 +1130,6 @@ def main():
     }
     
     turns_limit = 3
-    
-    # ship_stats1_tmp = {
-    #     'carrier': {
-    #         'coord': [],
-    #         'num': 0
-    #         },
-    #     'battleship': {
-    #         'coord': [],
-    #         'num': 0
-    #         },
-    #     'cruiser': {
-    #         'coord': [],
-    #         'num': 0
-    #         },
-    #     'destroyer': {
-    #         'coord': [],
-    #         'num': 0
-    #         },
-    # }
-    
-    # ship_stats2_tmp = {
-    #     'carrier': {
-    #         'coord': [],
-    #         'num': 0
-    #         },
-    #     'battleship': {
-    #         'coord': [],
-    #         'num': 0
-    #         },
-    #     'cruiser': {
-    #         'coord': [],
-    #         'num': 0
-    #         },
-    #     'destroyer': {
-    #         'coord': [],
-    #         'num': 0
-    #         },
-    # }
 
     # while True:
     #     clear()
@@ -1163,7 +1165,7 @@ def main():
     print_board(board2)
     input("Computer board, press any key to continue ...")
 
-    game_mode = "HUMAN-AI"
+    # game_mode = "HUMAN-AI"
     
     # Reset player's boards
     board1 = board_init(board_size)
