@@ -99,10 +99,22 @@ def print_table(ships, row, col, player_name):
 
 def print_boards(board1, board2, player1, player2):
     """Prints both boards to the screen."""
-    BOARD1_ROW = 1
-    BOARD1_COL = 1
-    BOARD2_ROW = 1
-    BOARD2_COL = 24
+    BOARD_SIZE = len(board1)
+    TABLE_ROWS_NUMBER = 8
+    TABLE_LENGTH = len("-------+------------+------------")
+    SPACING = 4
+
+    if BOARD_SIZE < TABLE_ROWS_NUMBER:
+        BOARD_Y_OFFSET = TABLE_ROWS_NUMBER - BOARD_SIZE - 0
+    else:
+        BOARD_Y_OFFSET = 1
+
+    BOARD_X_OFFSET = TABLE_LENGTH + SPACING
+
+    BOARD1_ROW = BOARD_Y_OFFSET
+    BOARD1_COL = BOARD_X_OFFSET
+    BOARD2_ROW = BOARD_Y_OFFSET
+    BOARD2_COL = BOARD_X_OFFSET + (BOARD_SIZE * 2) + 2 + SPACING
     print_board_mod(board1, BOARD1_ROW, BOARD1_COL, player1['name'])
     print_board_mod(board2, BOARD2_ROW, BOARD2_COL, player2['name'])
 
@@ -521,15 +533,45 @@ def shot_msg(shot_result, player_name, row, col):
         return f"{player_name} has sunk a ship by a shot at {coordinates_index_to_string(row, col)}!"
 
 
+def update_ships(ship_stats):
+    ships = {
+        'carrier': [5, 0],
+        'battleship': [4, 0],
+        'cruiser': [3, 0],
+        'destroyer': [2, 0]
+    }
+
+    for ship_type in ship_stats:
+        ships[ship_type][1] = len(ship_stats[ship_type])
+    
+    return ships
+
+
 def battleship_game(board1, board2, ship_stats1, ship_stats2, game_mode, player1, player2, turns_limit):
     """Game logic."""
+    BOARD_SIZE = len(board1)
+    SPACING = 4
+    TABLE_WIDTH = len("-------+------------+------------")
+    TABLE_ROWS_NUMBER = 8
+
+    TABLE_Y_OFFSET = BOARD_SIZE + 2 - TABLE_ROWS_NUMBER + 1
+    if TABLE_Y_OFFSET < 2:
+        TABLE_Y_OFFSET = 2
+
+    TABLE1_X_OFFSET = 1
+    TABLE2_X_OFFSET = (BOARD_SIZE * 2) - 1 + 2 + SPACING + TABLE_WIDTH + SPACING + (BOARD_SIZE * 2) - 1 + 2 + SPACING
+
     loop = True
     if game_mode == 'HUMAN-HUMAN':
         msg1 = ""
         msg2 = ""
         while turns_limit > 0:
             clear()
+            ships = update_ships(ship_stats1)
+            print_table(ships, TABLE_Y_OFFSET, TABLE1_X_OFFSET, player1['name'])
             print_boards(board1, board2, player1, player2)
+            ships = update_ships(ship_stats2)
+            print_table(ships, TABLE_Y_OFFSET, TABLE2_X_OFFSET, player2['name'])
             if msg2 != "":
                 print("")
                 print(msg2)
@@ -545,7 +587,11 @@ def battleship_game(board1, board2, ship_stats1, ship_stats2, game_mode, player1
                 continue
             
             clear()
+            ships = update_ships(ship_stats1)
+            print_table(ships, TABLE_Y_OFFSET, TABLE1_X_OFFSET, player1['name'])
             print_boards(board1, board2, player1, player2)
+            ships = update_ships(ship_stats2)
+            print_table(ships, TABLE_Y_OFFSET, TABLE2_X_OFFSET, player2['name'])
             if msg1 != "":
                 print("")
                 print(msg1)
@@ -568,7 +614,12 @@ def battleship_game(board1, board2, ship_stats1, ship_stats2, game_mode, player1
         msg2 = ""
         while turns_limit > 0:
             clear()
+            ships = update_ships(ship_stats1)
+            print_table(ships, TABLE_Y_OFFSET, TABLE1_X_OFFSET, player1['name'])
             print_boards(board1, board2, player1, player2)
+            ships = update_ships(ship_stats2)
+            print_table(ships, TABLE_Y_OFFSET, TABLE2_X_OFFSET, player2['name'])
+
             print("")
             print(msg1)
             print(msg2)
@@ -793,6 +844,7 @@ def auto_ship_placement(board, ship_stats, ships):
         user_input = None
         clear()
         ai_place_ship(board, ship_stats, ships)
+        print("")
         print_board(board)
         while user_input is None:
             user_input = input("Place ships again? ([y]/n): ")
@@ -937,13 +989,13 @@ def place_ship_loop(board, player, ship_stats, ships):
     __ships = copy.deepcopy(ships)
     BOARD_SIZE = len(board)
     TABLE_ROWS_NUMBER = 8
-    TABLE_Y_OFFSET = BOARD_SIZE - TABLE_ROWS_NUMBER + 2
-    if TABLE_Y_OFFSET < 0:
-        TABLE_Y_OFFSET = 1
+    TABLE_Y_OFFSET = BOARD_SIZE + 2 - TABLE_ROWS_NUMBER + 1
+    if TABLE_Y_OFFSET < 2:
+        TABLE_Y_OFFSET = 2
     TABLE_X_OFFSET = (BOARD_SIZE * 2) - 1 + 2 + 4
 
     if BOARD_SIZE < TABLE_ROWS_NUMBER:
-        BOARD_Y_OFFSET = TABLE_ROWS_NUMBER - BOARD_SIZE - 1
+        BOARD_Y_OFFSET = TABLE_ROWS_NUMBER - BOARD_SIZE - 0
     else:
         BOARD_Y_OFFSET = 1
     BOARD_X_OFFSET = 1
@@ -956,7 +1008,7 @@ def place_ship_loop(board, player, ship_stats, ships):
         place_ship(board, player, ship_stats, __ships)
     
     clear()
-    print_board(board)
+    print_board_mod(board, BOARD_Y_OFFSET, BOARD_X_OFFSET)
     print_table(__ships, TABLE_Y_OFFSET, TABLE_X_OFFSET, player['name'])
     print("")
     input("All your ships are on positions. Press ENTER to continue ...")
@@ -971,10 +1023,10 @@ def main():
     # - first, corresponds to the ship's size
     # - second, corresponds to the number of ship units that can be placed on board
     ships = {
-        'carrier': [5, 1],
-        'battleship': [4, 2],
-        'cruiser': [3, 3],
-        'destroyer': [2, 4]
+        'carrier': [5, 0],
+        'battleship': [4, 1],
+        'cruiser': [3, 2],
+        'destroyer': [2, 2]
     }
 
     # ships = {
