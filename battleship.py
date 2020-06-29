@@ -5,7 +5,15 @@ import random
 
 
 AI_MODE = "normal" # if 'god_like' while picking a shot AI takes into account the ship length
-
+MARK_MISS = chr(8729)
+MARK_HIT = "H"
+MARK_SUNK = "S"
+MARK_EMPTY = "~"
+MARK_HIT_COLOR = "\033[93m"
+MARK_SUNK_COLOR = "\033[91m"
+MARK_EMPTY_COLOR = "\033[96m"
+MARK_MISS_COLOR = "\033[0m"
+WHITE = "\033[0m"
 
 def go_to_point(row, col):
     return f"\033[{row};{col}H"
@@ -19,8 +27,22 @@ def board_init(size):
     """Initilizes a board of custom size."""
     board = []
     for row in range(size):
-        board.append(('0 '*size).split(' ')[:-1])
+        board.append((f"{MARK_EMPTY} "*size).split(' ')[:-1])
     return board
+
+
+def board_row_color_parser(row):
+    __row = copy.deepcopy(row)
+    for index in range(len(__row)):
+        if __row[index] == MARK_EMPTY:
+            __row[index] = f"{MARK_EMPTY_COLOR}{MARK_EMPTY}{WHITE}"
+        elif __row[index] == MARK_MISS:
+            __row[index] = f"{MARK_MISS_COLOR}{MARK_MISS}{WHITE}"
+        elif __row[index] == MARK_HIT:
+            __row[index] = f"{MARK_HIT_COLOR}{MARK_HIT}{WHITE}"
+        elif __row[index] == MARK_SUNK:
+            __row[index] = f"{MARK_SUNK_COLOR}{MARK_SUNK}{WHITE}"
+    return __row
 
 
 def print_board(board):
@@ -42,7 +64,7 @@ def print_board(board):
     print(" ", " ".join(cols_str))
     
     for index in range(col_len):
-        print(f"{rows[index]} {' '.join(board[index])}")
+        print(f"{rows[index]} {' '.join(board_row_color_parser(board[index]))}")
         
     print("")
 
@@ -70,7 +92,7 @@ def print_board_mod(board, row, col, player_name=""):
     print(f"{go_to_point(__row, __col)}  {' '.join(cols_str)}")
     __row += 1
     for index in range(col_len):
-        print(f"{go_to_point(__row, __col)}{rows[index]} {' '.join(board[index])}")
+        print(f"{go_to_point(__row, __col)}{rows[index]} {' '.join(board_row_color_parser(board[index]))}")
         __row += 1
         
     print("")
@@ -161,7 +183,7 @@ def get_player_target_for_shot(opponent_board, player):
             row = rows.index(ROW.upper())
             col = cols.index(int(COL))
 
-        if opponent_board[row][col] != '0':
+        if opponent_board[row][col] != MARK_EMPTY:
             msg = "You have already made a shot to this coordinates."
             user_input = None
             continue
@@ -192,17 +214,17 @@ def ai_horizontally_pick_coord(board, coords):
     coords_for_shot = []
     
     if col_index_left_shotted_module > 0:
-        if board[row][col_index_left_shotted_module - 1] == '0' and ai_is_not_sunk_above_below(board, [row, col_index_left_shotted_module - 1]):
+        if board[row][col_index_left_shotted_module - 1] == MARK_EMPTY and ai_is_not_sunk_above_below(board, [row, col_index_left_shotted_module - 1]):
             if col_index_left_shotted_module - 1 > 0:
-                if board[row][col_index_left_shotted_module - 2] in ['0', 'M', 'H']:
+                if board[row][col_index_left_shotted_module - 2] in [MARK_EMPTY, MARK_MISS, MARK_HIT]:
                     coords_for_shot.append([row, col_index_left_shotted_module - 1])
             else:
                 coords_for_shot.append([row, col_index_left_shotted_module - 1])
     
     if col_index_right_shotted_module < BOARD_SIZE - 1:
-        if board[row][col_index_right_shotted_module + 1] == '0' and ai_is_not_sunk_above_below(board, [row, col_index_left_shotted_module + 1]):
+        if board[row][col_index_right_shotted_module + 1] == MARK_EMPTY and ai_is_not_sunk_above_below(board, [row, col_index_left_shotted_module + 1]):
             if col_index_right_shotted_module + 1 < BOARD_SIZE - 1:
-                if board[row][col_index_right_shotted_module + 2] in ['0', 'M', 'H']:
+                if board[row][col_index_right_shotted_module + 2] in [MARK_EMPTY, MARK_MISS, MARK_HIT]:
                     coords_for_shot.append([row, col_index_right_shotted_module + 1])
             else:
                 coords_for_shot.append([row, col_index_right_shotted_module + 1])
@@ -223,34 +245,34 @@ def ai_pick_coord_from_single_hit(board, ship):
 
     if ai_number_of_free_spaces_left_right(board, [row, col]) >= ship['len']:
         if col > 0:
-            if board[row][col - 1] == '0' and ai_is_not_sunk_above_below(board, [row, col - 1]):
+            if board[row][col - 1] == MARK_EMPTY and ai_is_not_sunk_above_below(board, [row, col - 1]):
                 if col - 1 > 0:
-                    if board[row][col - 2] in ['M', 'H', '0']:
+                    if board[row][col - 2] in [MARK_EMPTY, MARK_MISS, MARK_HIT]:
                         valid_shots.append([row, col - 1])
                 else:
                     valid_shots.append([row, col - 1])
         
         if col < BOARD_SIZE - 1:
-            if board[row][col + 1] == '0' and ai_is_not_sunk_above_below(board, [row, col + 1]):
+            if board[row][col + 1] == MARK_EMPTY and ai_is_not_sunk_above_below(board, [row, col + 1]):
                 if col + 1 < BOARD_SIZE - 1:
-                    if board[row][col + 2] in ['M', 'H', '0']:
+                    if board[row][col + 2] in [MARK_EMPTY, MARK_MISS, MARK_HIT]:
                         valid_shots.append([row, col + 1])
                 else:
                     valid_shots.append([row, col + 1])
     
     if ai_number_of_free_spaces_above_below(board, [row, col]) >= ship['len']:
         if row > 0:
-            if board[row - 1][col] == '0' and ai_is_not_sunk_left_right(board, [row - 1, col]):
+            if board[row - 1][col] == MARK_EMPTY and ai_is_not_sunk_left_right(board, [row - 1, col]):
                 if row - 1 > 0:
-                    if board[row - 2][col] in ['M', 'H', '0']:
+                    if board[row - 2][col] in [MARK_EMPTY, MARK_MISS, MARK_HIT]:
                         valid_shots.append([row - 1, col])
                 else:
                     valid_shots.append([row - 1, col])
         
         if row < BOARD_SIZE - 1:
-            if board[row + 1][col] == '0' and ai_is_not_sunk_left_right(board, [row + 1, col]):
+            if board[row + 1][col] == MARK_EMPTY and ai_is_not_sunk_left_right(board, [row + 1, col]):
                 if row + 1 < BOARD_SIZE - 1:
-                    if board[row + 2][col] in ['M', 'H', '0']:
+                    if board[row + 2][col] in [MARK_EMPTY, MARK_MISS, MARK_HIT]:
                         valid_shots.append([row + 1, col])
                 else:
                     valid_shots.append([row + 1, col])
@@ -270,33 +292,33 @@ def ai_pick_coord_from_single_hit_normal_mode(board, coord):
     valid_shots = []
 
     if col > 0:
-        if board[row][col - 1] == '0' and ai_is_not_sunk_above_below(board, [row, col - 1]):
+        if board[row][col - 1] == MARK_EMPTY and ai_is_not_sunk_above_below(board, [row, col - 1]):
             if col - 1 > 0:
-                if board[row][col - 2] in ['M', 'H', '0']:
+                if board[row][col - 2] in [MARK_EMPTY, MARK_MISS, MARK_HIT]:
                     valid_shots.append([row, col - 1])
             else:
                 valid_shots.append([row, col - 1])
     
     if col < BOARD_SIZE - 1:
-        if board[row][col + 1] == '0' and ai_is_not_sunk_above_below(board, [row, col + 1]):
+        if board[row][col + 1] == MARK_EMPTY and ai_is_not_sunk_above_below(board, [row, col + 1]):
             if col + 1 < BOARD_SIZE - 1:
-                if board[row][col + 2] in ['M', 'H', '0']:
+                if board[row][col + 2] in [MARK_EMPTY, MARK_MISS, MARK_HIT]:
                     valid_shots.append([row, col + 1])
             else:
                 valid_shots.append([row, col + 1])
     
     if row > 0:
-        if board[row - 1][col] == '0' and ai_is_not_sunk_left_right(board, [row - 1, col]):
+        if board[row - 1][col] == MARK_EMPTY and ai_is_not_sunk_left_right(board, [row - 1, col]):
             if row - 1 > 0:
-                if board[row - 2][col] in ['M', 'H', '0']:
+                if board[row - 2][col] in [MARK_EMPTY, MARK_MISS, MARK_HIT]:
                     valid_shots.append([row - 1, col])
             else:
                 valid_shots.append([row - 1, col])
     
     if row < BOARD_SIZE - 1:
-        if board[row + 1][col] == '0' and ai_is_not_sunk_left_right(board, [row + 1, col]):
+        if board[row + 1][col] == MARK_EMPTY and ai_is_not_sunk_left_right(board, [row + 1, col]):
             if row + 1 < BOARD_SIZE - 1:
-                if board[row + 2][col] in ['M', 'H', '0']:
+                if board[row + 2][col] in [MARK_EMPTY, MARK_MISS, MARK_HIT]:
                     valid_shots.append([row + 1, col])
             else:
                 valid_shots.append([row + 1, col])
@@ -317,14 +339,14 @@ def ai_number_of_free_spaces_left_right(board, coord):
     
     # Count to the left
     for col_index in range(col - 1, -1, -1):
-        if board[row][col_index] == '0':
+        if board[row][col_index] == MARK_EMPTY:
             free_spaces_number += 1
         else:
             break
     
     # Count to the right
     for col_index in range(col + 1, BOARD_SIZE):
-        if board[row][col_index] == '0':
+        if board[row][col_index] == MARK_EMPTY:
             free_spaces_number += 1
         else:
             break
@@ -342,14 +364,14 @@ def ai_number_of_free_spaces_above_below(board, coord):
     
     # Count above
     for row_index in range(row + 1, BOARD_SIZE):
-        if board[row_index][col] == '0':
+        if board[row_index][col] == MARK_EMPTY:
             free_spaces_number += 1
         else:
             break
 
     # Count below
     for row_index in range(row - 1, -1, -1):
-        if board[row_index][col] == '0':
+        if board[row_index][col] == MARK_EMPTY:
             free_spaces_number += 1
         else:
             break
@@ -369,17 +391,17 @@ def ai_vertically_pick_coord(board, coords):
     coords_for_shot = []
 
     if row_index_up_shotted_module > 0:
-        if board[row_index_up_shotted_module - 1][col] == '0' and ai_is_not_sunk_left_right(board, [row_index_up_shotted_module - 1, col]):
+        if board[row_index_up_shotted_module - 1][col] == MARK_EMPTY and ai_is_not_sunk_left_right(board, [row_index_up_shotted_module - 1, col]):
             if row_index_up_shotted_module - 1 > 0:
-                if board[row_index_up_shotted_module - 2][col] in ['0', 'M', 'H']:
+                if board[row_index_up_shotted_module - 2][col] in [MARK_EMPTY, MARK_MISS, MARK_HIT]:
                     coords_for_shot.append([row_index_up_shotted_module - 1, col])
             else:
                 coords_for_shot.append([row_index_up_shotted_module - 1, col])
     
     if row_index_down_shotted_module < BOARD_SIZE - 1:
-        if board[row_index_down_shotted_module + 1][col] == '0' and ai_is_not_sunk_left_right(board, [row_index_up_shotted_module + 1, col]):
+        if board[row_index_down_shotted_module + 1][col] == MARK_EMPTY and ai_is_not_sunk_left_right(board, [row_index_up_shotted_module + 1, col]):
             if row_index_down_shotted_module + 1 < BOARD_SIZE - 1:
-                if board[row_index_down_shotted_module + 2][col] in ['0', 'M', 'H']:
+                if board[row_index_down_shotted_module + 2][col] in [MARK_EMPTY, MARK_MISS, MARK_HIT]:
                     coords_for_shot.append([row_index_down_shotted_module + 1, col])
             else:
                 coords_for_shot.append([row_index_down_shotted_module + 1, col])
@@ -410,11 +432,11 @@ def ai_is_not_sunk_left_right(board, coord):
     row, col = coord
 
     if col > 0:
-        if board[row][col - 1] == 'S':
+        if board[row][col - 1] == MARK_SUNK:
             return False
     
     if col < SIZE - 1:
-        if board[row][col + 1] == 'S':
+        if board[row][col + 1] == MARK_SUNK:
             return False
     
     return True
@@ -428,11 +450,11 @@ def ai_is_not_sunk_above_below(board, coord):
     row, col = coord
 
     if row > 0:
-        if board[row - 1][col] == 'S':
+        if board[row - 1][col] == MARK_SUNK:
             return False
     
     if row < SIZE - 1:
-        if board[row + 1][col] == 'S':
+        if board[row + 1][col] == MARK_SUNK:
             return False
     
     return True
@@ -441,7 +463,7 @@ def ai_is_not_sunk_above_below(board, coord):
 def ai_is_shot_valid(board, coord):
     row, col = coord
 
-    if board[row][col] == '0':
+    if board[row][col] == MARK_EMPTY:
         if ai_is_not_sunk_left_right(board, [row, col]) and ai_is_not_sunk_above_below(board, [row, col]):
             return True
         else:
@@ -496,14 +518,14 @@ def shot(opponent_board, oponent_ship_stats, player, row, col):
                 ship['shot'].append([row, col])
                 if ship['len'] == len(ship['shot']):
                     for cord in ship['shot']:
-                        opponent_board[cord[0]][cord[1]] = 'S'
-                    return 'S'
+                        opponent_board[cord[0]][cord[1]] = f"{MARK_SUNK_COLOR}{MARK_SUNK}{WHITE}"
+                    return MARK_SUNK
                 else:
-                    opponent_board[row][col] = 'H'
-                    return 'H'
+                    opponent_board[row][col] = f"{MARK_HIT_COLOR}{MARK_HIT}{WHITE}"
+                    return MARK_HIT
     else:
-        opponent_board[row][col] = 'M'
-        return 'M'
+        opponent_board[row][col] = f"{MARK_MISS_COLOR}{MARK_MISS}{WHITE}"
+        return MARK_MISS
 
 
 def is_all_ships_destroyed(board, ship_stats):
@@ -529,11 +551,11 @@ def coordinates_index_to_string(row, col):
 
 
 def shot_msg(shot_result, player_name, row, col):
-    if shot_result == 'H':
+    if shot_result == MARK_HIT:
         return f"{player_name} has hit a ship at {coordinates_index_to_string(row, col)}!"
-    elif shot_result == 'M':
+    elif shot_result == MARK_MISS:
         return f"{player_name} has missed at {coordinates_index_to_string(row, col)}!"
-    elif shot_result == 'S':
+    elif shot_result == MARK_SUNK:
         return f"{player_name} has sunk a ship by a shot at {coordinates_index_to_string(row, col)}!"
 
 
@@ -721,7 +743,7 @@ def place_ship_horizontally(user_input, board, ships, ship_stats, ship_type, shi
             return "The coordinates are outside the board.", user_input
         
         # Checks if a ship overlaps other ship
-        if board[row][col_index] != '0':
+        if board[row][col_index] != MARK_EMPTY:
             user_input = None
             return "The ship overlaps the other ship!", user_input
         
@@ -729,13 +751,13 @@ def place_ship_horizontally(user_input, board, ships, ship_stats, ship_type, shi
         if col <= col_index <= col + ship_len:
             for i in [-1, 1]:
                 if 0 <= row + i <= board_size - 1: # Checks if indexes after modifications are within a valid range
-                    if board[row + i][col_index] != '0':
+                    if board[row + i][col_index] != MARK_EMPTY:
                         user_input = None
                         return "Ships are too close!", user_input
         
         # Checks if other ship is on the right
         if col_index == col + ship_len - 1 and col_index < board_size - 1:
-            if board[row][col_index + 1] != '0':
+            if board[row][col_index + 1] != MARK_EMPTY:
                 user_input = None
                 return "Ships are too close!", user_input
 
@@ -770,7 +792,7 @@ def place_ship_vertically(user_input, board, ships, ship_stats, ship_type, ship_
             return "The coordinates are outside the board.", user_input
         
         # Checks if a ship overlaps other ship
-        if board[row_index][col] != '0':
+        if board[row_index][col] != MARK_EMPTY:
             user_input = None
             return "The ship overlaps the other ship!", user_input
         
@@ -778,13 +800,13 @@ def place_ship_vertically(user_input, board, ships, ship_stats, ship_type, ship_
         if row <= row_index <= row + ship_len:
             for i in [-1, 1]:
                 if 0 <= col + i <= board_size - 1: # Checks if indexes after modifications are within a valid range
-                    if board[row_index][col + i] != '0':
+                    if board[row_index][col + i] != MARK_EMPTY:
                         user_input = None
                         return "Ships are too close!", user_input
                 
         # Checks if other ship is below
         if row_index == row + ship_len - 1 and row_index < board_size - 1:
-            if board[row_index + 1][col] != '0':
+            if board[row_index + 1][col] != MARK_EMPTY:
                 user_input = None
                 return "Ships are too close!", user_input
             
@@ -901,7 +923,7 @@ def auto_ship_placement(board, ship_stats, ships):
     while loop:
         user_input = None
         clear()
-        ai_place_ship(board, ship_stats, ships)
+        ai_place_ship(board, ship_stats, __ships)
         print("")
         print_board(board)
         while user_input is None:
@@ -910,7 +932,7 @@ def auto_ship_placement(board, ship_stats, ships):
                 if user_input.upper() in ['Y', ""]:
                     for row in range(BOARD_SIZE):
                         for col in range(BOARD_SIZE):
-                            board[row][col] = '0'
+                            board[row][col] = f"{MARK_EMPTY}"
                     for ship_type in ship_stats:
                         ship_stats[ship_type] = []
                     for ship_type in __ships:
@@ -919,6 +941,10 @@ def auto_ship_placement(board, ship_stats, ships):
                     return
             else:
                 user_input = None
+    
+    # Edit the reference of 'ships'
+    for ship_type in __ships:
+        ships[ship_type][1] = 0
 
 
 def check_all_ships_are_placed(ships):
@@ -948,23 +974,23 @@ def get_random_direction():
 
 
 def ai_check_nearby_free_places(board, coord):
-    """Returns True if in any of the adjacent positions are something else than '0'"""
+    """Returns True if in any of the adjacent positions are something else than '~'"""
     BOARD_SIZE = len(board)
     row, col = coord
     
-    if board[row][col] != '0':
+    if board[row][col] != MARK_EMPTY:
         return True
     if col > 0:
-        if board[row][col - 1] != '0':
+        if board[row][col - 1] != MARK_EMPTY:
             return True
     if col < BOARD_SIZE - 1:
-        if board[row][col + 1] != '0':
+        if board[row][col + 1] != MARK_EMPTY:
             return True
     if row > 0:
-        if board[row - 1][col] != '0':
+        if board[row - 1][col] != MARK_EMPTY:
             return True
     if row < BOARD_SIZE - 1:
-        if board[row + 1][col] != '0':
+        if board[row + 1][col] != MARK_EMPTY:
             return True
     
     return False
@@ -1027,20 +1053,17 @@ def ai_place_ship(board, ship_stats, ships):
         
         # Preventing from infinite loop. Some ships distribution may make it impossible to place all ships.
         if counter > 100:
-            board = board_init(BOARD_SIZE) # Reset the board
+            for row in range(BOARD_SIZE):
+                for col in range(BOARD_SIZE):
+                    board[row][col] = f"{MARK_EMPTY}" # Reset the board
+            for ship_type in ship_stats:
+                ship_stats[ship_type] = [] # Reset the ship_stats
+
             __ships = copy.deepcopy(ships) # Reset the __ships
-            ship_stats = {
-                'carrier': [],
-                'battleship': [],
-                'cruiser': [],
-                'destroyer': []
-            }
             counter = 0
         counter += 1
     
-    # Edit the reference of 'ships'
-    for ship_type in __ships:
-        ships[ship_type][1] = 0
+    
 
 
 def place_ship_loop(board, player, ship_stats, ships):
@@ -1083,8 +1106,8 @@ def main(board_size=9, game_mode="HUMAN-AI"):
     ships = {
         'carrier': [5, 0],
         'battleship': [4, 1],
-        'cruiser': [3, 2],
-        'destroyer': [2, 2]
+        'cruiser': [3, 0],
+        'destroyer': [2, 0]
     }
 
     # ships = {
@@ -1129,7 +1152,7 @@ def main(board_size=9, game_mode="HUMAN-AI"):
         'destroyer': []
     }
     
-    turns_limit = 3
+    turns_limit = 10
 
     # while True:
     #     clear()
