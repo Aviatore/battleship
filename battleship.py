@@ -569,7 +569,11 @@ def update_ships(ship_stats):
     }
 
     for ship_type in ship_stats:
-        ships[ship_type][1] = len(ship_stats[ship_type])
+        count = len(ship_stats[ship_type])
+        for ship in ship_stats[ship_type]:
+            if len(ship['shot']) == ship['len']:
+                count -= 1
+        ships[ship_type][1] = count
     
     return ships
 
@@ -1133,10 +1137,10 @@ def main(board_size=9, game_mode="HUMAN-AI"):
     # - first, corresponds to the ship's size
     # - second, corresponds to the number of ship units that can be placed on board
     ships = {
-        'carrier': [5, 0],
-        'battleship': [4, 1],
-        'cruiser': [3, 0],
-        'destroyer': [2, 0]
+        'carrier': [5, 1],
+        'battleship': [4, 2],
+        'cruiser': [3, 3],
+        'destroyer': [2, 4]
     }
 
     # ships = {
