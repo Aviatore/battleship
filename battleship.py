@@ -900,12 +900,16 @@ def place_ship(board, player, ship_stats, ships):
 
     user_input = None
     msg = ""
+    print("")
 
+    save_cursor_position()
     while user_input is None:
+        restore_cursor_position()
         print(msg)
         msg = ""
         print("If you want to place your ships automatically, write 'auto' and press ENTER.")
         print(f"{player['name']}, give coordinates, type and direction of your ship: ")
+        clear_line()
         user_input = input("> ")
         user_input_list = user_input.split(" ")
 
@@ -916,6 +920,7 @@ def place_ship(board, player, ship_stats, ships):
             auto_ship_placement(board, ship_stats, ships)
             continue
         elif len(user_input_list) != 3:
+            msg = "You must provide coordinates, ship type and direction, e.g. b2 cruiser h."
             user_input = None
             continue
 
@@ -925,17 +930,21 @@ def place_ship(board, player, ship_stats, ships):
         DIRECTION = user_input_list[2] # The direction code: 'h' - horizontally or 'v' - vertically
 
         if ROW.upper() not in rows or COL not in cols_str:
+            msg = f"The row letter must be between A and {rows_template[BOARD_SIZE - 1]} and the column number must be between 1 and {BOARD_SIZE}."
             user_input = None
             continue
 
         SHIP_TYPE = is_ship_type_correct(ships, SHIP_TYPE)
         if SHIP_TYPE is None:
+            available_ships = sorted(list(ships.keys()))
+            msg = f"You must provide one of the following ship types: {', '.join(available_ships[0:-1])} and {available_ships[-1]}."
             user_input = None
             continue
         # elif SHIP_TYPE not in ['carrier', 'battleship', 'cruiser', 'destroyer']:
         #     user_input = None
         #     continue
         elif DIRECTION not in ['h', 'v']:
+            msg = "You must provide direction in the following formats: 'h' for horizontal or 'v' for vertical."
             user_input = None
             continue
 
