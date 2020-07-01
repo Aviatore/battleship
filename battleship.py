@@ -529,13 +529,13 @@ def shot(opponent_board, oponent_ship_stats, player, row, col):
                 if ship['len'] == len(ship['shot']):
                     for cord in ship['shot']:
                         opponent_board[cord[0]][cord[1]] = f"{MARK_SUNK_COLOR}{MARK_SUNK}{WHITE}"
-                    return MARK_SUNK
+                    return MARK_SUNK, ship_type
                 else:
                     opponent_board[row][col] = f"{MARK_HIT_COLOR}{MARK_HIT}{WHITE}"
-                    return MARK_HIT
+                    return MARK_HIT, ship_type
     else:
         opponent_board[row][col] = f"{MARK_MISS_COLOR}{MARK_MISS}{WHITE}"
-        return MARK_MISS
+        return MARK_MISS, None
 
 
 def is_all_ships_destroyed(board, ship_stats):
@@ -560,13 +560,13 @@ def coordinates_index_to_string(row, col):
     return output    
 
 
-def shot_msg(shot_result, player_name, row, col):
+def shot_msg(shot_result, player_name, row, col, hit_ship):
     if shot_result == MARK_HIT:
         return f"{player_name} has hit a ship at {coordinates_index_to_string(row, col)}!"
     elif shot_result == MARK_MISS:
         return f"{player_name} has missed at {coordinates_index_to_string(row, col)}!"
     elif shot_result == MARK_SUNK:
-        return f"{player_name} has sunk a ship by a shot at {coordinates_index_to_string(row, col)}!"
+        return f"{player_name} has sunk a {hit_ship} by a shot at {coordinates_index_to_string(row, col)}!"
 
 
 def update_ships(ship_stats):
@@ -664,8 +664,8 @@ def battleship_game(board1, board2, ship_stats1, ship_stats2, game_mode, player1
 
             row, col = get_player_target_for_shot(board2, player1)
 
-            shot_result = shot(board2, ship_stats2, player1, row, col)
-            msg1 = shot_msg(shot_result, player1['name'], row, col)
+            shot_result, hitted_ship = shot(board2, ship_stats2, player1, row, col)
+            msg1 = shot_msg(shot_result, player1['name'], row, col, hitted_ship)
 
             if is_all_ships_destroyed(board2, ship_stats2):
                 loop = False
@@ -694,8 +694,8 @@ def battleship_game(board1, board2, ship_stats1, ship_stats2, game_mode, player1
                 msg1 = ""
             row, col = get_player_target_for_shot(board1, player2)
 
-            shot_result = shot(board1, ship_stats1, player2, row, col)
-            msg2 = shot_msg(shot_result, player2['name'], row, col)
+            shot_result, hitted_ship = shot(board1, ship_stats1, player2, row, col)
+            msg2 = shot_msg(shot_result, player2['name'], row, col, hitted_ship)
 
             if is_all_ships_destroyed(board1, ship_stats1):
                 loop = False
@@ -735,8 +735,8 @@ def battleship_game(board1, board2, ship_stats1, ship_stats2, game_mode, player1
 
             row, col = get_player_target_for_shot(board2, player1)
 
-            shot_result = shot(board2, ship_stats2, player1, row, col)
-            msg1 = shot_msg(shot_result, player1['name'], row, col)
+            shot_result, hitted_ship = shot(board2, ship_stats2, player1, row, col)
+            msg1 = shot_msg(shot_result, player1['name'], row, col, hitted_ship)
 
             if is_all_ships_destroyed(board2, ship_stats2):
                 loop = False
@@ -758,8 +758,8 @@ def battleship_game(board1, board2, ship_stats1, ship_stats2, game_mode, player1
             
             row, col = get_ai_target_for_shot(board1, ship_stats1, player2)
 
-            shot_result = shot(board1, ship_stats1, player2, row, col)
-            msg2 = shot_msg(shot_result, player2['name'], row, col)
+            shot_result, hitted_ship = shot(board1, ship_stats1, player2, row, col)
+            msg2 = shot_msg(shot_result, player2['name'], row, col, hitted_ship)
 
             if is_all_ships_destroyed(board1, ship_stats1):
                 loop = False
