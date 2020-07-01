@@ -161,23 +161,32 @@ def get_player_target_for_shot(opponent_board, player):
 
     user_input = None
     msg = ""
-
+    save_cursor_position()
     while user_input is None:
+        restore_cursor_position()
         print(msg)
         msg = ""
         print(f"{player['name']}, give coordinates for the shot: ")
+        clear_line()
         user_input = input("> ")
+
+        if user_input == "":
+            msg = "You must input something."
+            user_input = None
+            continue
+        elif user_input[0] == 'quit':
+            print("Good bye!")
+            exit()
+        elif len(user_input) != 2:
+            msg = "Please, provide coordinates in the following format, e.g. B2."
+            user_input = None
+            continue
 
         ROW = user_input[0] # The row letter
         COL = user_input[1] # The col number
 
-        if user_input[0] == 'quit':
-            print("Good bye!")
-            exit()
-        elif len(user_input) != 2:
-            user_input = None
-            continue
-        elif ROW.upper() not in rows or COL not in cols_str:
+        if ROW.upper() not in rows or COL not in cols_str:
+            msg = f"The row letter must be between A and {rows_template[BOARD_SIZE - 1]} and the column number must be between 1 and {BOARD_SIZE}."
             user_input = None
             continue
         else:
@@ -581,8 +590,13 @@ def update_ships(ship_stats):
 def save_cursor_position():
     print("\033[s", end="")
 
+
 def restore_cursor_position():
     print("\033[u\033[0K", end="")
+
+
+def clear_line():
+    print("\033[0K", end="")
 
 
 def print_summary_message(board_size, game_mode, player_name=None):
