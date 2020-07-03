@@ -2,6 +2,7 @@ import copy
 import pprint
 from os import system
 import random
+import menu
 
 
 AI_MODE = "normal" # if 'god_like' while picking a shot AI takes into account the ship length
@@ -646,9 +647,14 @@ def battleship_game(board1, board2, ship_stats1, ship_stats2, game_mode, player1
     if game_mode == 'HUMAN-HUMAN':
         msg1 = ""
         msg2 = ""
-        while turns_limit > 0:
+        while turns_limit > 0 or turns_limit < 0:
+            if turns_limit < 0:
+                turns_limit_str = "infinite"
+            else:
+                turns_limit_str = str(turns_limit)
+                
             clear()
-            turns_msg = f"Turns left: {turns_limit}"
+            turns_msg = f"Turns left: {turns_limit_str}"
 
             print(turns_msg.center(CONTENT_WIDTH))
 
@@ -679,7 +685,7 @@ def battleship_game(board1, board2, ship_stats1, ship_stats2, game_mode, player1
                 continue
             
             clear()
-            turns_msg = f"Turns left: {turns_limit}"
+            turns_msg = f"Turns left: {turns_limit_str}"
 
             print(turns_msg.center(CONTENT_WIDTH))
 
@@ -708,16 +714,22 @@ def battleship_game(board1, board2, ship_stats1, ship_stats2, game_mode, player1
                 print_summary_message(BOARD_SIZE, game_mode, player2['name'])
                 continue
             
-            turns_limit -= 1
+            if turns_limit > 0:
+                turns_limit -= 1
         
         print("No more turns, it's a draw!")
 
     elif game_mode == 'HUMAN-AI':
         msg1 = ""
         msg2 = ""
-        while turns_limit > 0:
+        while turns_limit > 0 or turns_limit < 0:
+            if turns_limit < 0:
+                turns_limit_str = "infinite"
+            else:
+                turns_limit_str = str(turns_limit)
+                
             clear()
-            turns_msg = f"Turns left: {turns_limit}"
+            turns_msg = f"Turns left: {turns_limit_str}"
 
             print(turns_msg.center(CONTENT_WIDTH))
 
@@ -765,8 +777,9 @@ def battleship_game(board1, board2, ship_stats1, ship_stats2, game_mode, player1
                 loop = False
                 print_summary_message(BOARD_SIZE, game_mode, player2['name'])
                 continue
-
-            turns_limit -= 1
+            
+            if turns_limit > 0:
+                turns_limit -= 1
         
         clear()
         ships = update_ships(ship_stats1)
@@ -1151,20 +1164,27 @@ def place_ship_loop(board, player, ship_stats, ships):
     input("All your ships are on positions. Press ENTER to continue ...")
 
 
-def main(board_size=9, game_mode="HUMAN-AI"):
-    # board_size = 7
+
+
+
+
+def main():
+    board_size, game_mode, ships, player1, player2, turns_limit = menu.menu()
+    run_game(board_size, game_mode, ships, player1, player2, turns_limit)
+
+def run_game(board_size, game_mode, ships, player1, player2, turns_limit):
     board1 = board_init(board_size)
     board2 = board_init(board_size)
     
     # Declaration of ship types. The lists contain two values:
     # - first, corresponds to the ship's size
     # - second, corresponds to the number of ship units that can be placed on board
-    ships = {
-        'carrier': [5, 1],
-        'battleship': [4, 2],
-        'cruiser': [3, 3],
-        'destroyer': [2, 4]
-    }
+    # ships = {
+    #     'carrier': [5, 0],
+    #     'battleship': [4, 1],
+    #     'cruiser': [3, 1],
+    #     'destroyer': [2, 2]
+    # }
 
     # ships = {
     #     'carrier': [5, 1],
@@ -1173,14 +1193,14 @@ def main(board_size=9, game_mode="HUMAN-AI"):
     #     'destroyer': [2, 0]
     # }
     
-    player1 = {
-        'name': 'Ryland Hailey',
-        'color': None
-    }
-    player2 = {
-        'name': 'Ulric Alden',
-        'color': None
-    }
+    # player1 = {
+    #     'name': 'Ryland Hailey',
+    #     'color': None
+    # }
+    # player2 = {
+    #     'name': 'Ulric Alden',
+    #     'color': None
+    # }
     
     # Declaration of dictionary that contains data about player's ships.
     # Each key corresponds to the ship type and contains a list of dictionaries 
@@ -1208,7 +1228,7 @@ def main(board_size=9, game_mode="HUMAN-AI"):
         'destroyer': []
     }
     
-    turns_limit = 10
+    # turns_limit = 10
 
     # while True:
     #     clear()
@@ -1230,8 +1250,14 @@ def main(board_size=9, game_mode="HUMAN-AI"):
     #         'destroyer': []
     #     }
 
+    if game_mode == "HUMAN-AI":
+        place_ship_loop(board1, player1, ship_stats1, ships)
+        ai_place_ship(board2, ship_stats2, ships)
+    else:
+        place_ship_loop(board1, player1, ship_stats1, ships)
+        place_ship_loop(board2, player2, ship_stats2, ships)
     # Player1 places his ships
-    place_ship_loop(board1, player1, ship_stats1, ships)
+    # place_ship_loop(board1, player1, ship_stats1, ships)
     
     # ai_place_ship(board1, ship_stats1, ships)
     # print_board(board1)
@@ -1240,9 +1266,9 @@ def main(board_size=9, game_mode="HUMAN-AI"):
     # Player2 places his ships
     # place_ship_loop(board2, player2, ship_stats2, ships)
 
-    ai_place_ship(board2, ship_stats2, ships)
-    print_board(board2)
-    input("Computer board, press any key to continue ...")
+    # ai_place_ship(board2, ship_stats2, ships)
+    # print_board(board2)
+    # input("Computer board, press any key to continue ...")
 
     # game_mode = "HUMAN-AI"
     
