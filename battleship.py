@@ -127,10 +127,7 @@ def print_boards(board1, board2, player1, player2):
     TABLE_LENGTH = len("-------+------------+------------")
     SPACING = 4
 
-    if BOARD_SIZE < TABLE_ROWS_NUMBER:
-        BOARD_Y_OFFSET = TABLE_ROWS_NUMBER - BOARD_SIZE + 2
-    else:
-        BOARD_Y_OFFSET = 3
+    BOARD_Y_OFFSET = 3
 
     BOARD_X_OFFSET = TABLE_LENGTH + SPACING
 
@@ -600,7 +597,7 @@ def clear_line():
     print("\033[0K", end="")
 
 
-def print_summary_message(board_size, game_mode, player_name=None):
+def print_summary_message(board_size, game_mode, ships, player1, player2, turns_limit, player_name=None):
     print("")
     if player_name is None:
         print("No more turns, it's a draw!")
@@ -620,6 +617,7 @@ def print_summary_message(board_size, game_mode, player_name=None):
         if user_input not in ['y', 'm', 'q', 'quit']:
             user_input = None
         elif user_input == 'y':
+            run_game(board_size, game_mode, ships, player1, player2, turns_limit)
             main(board_size, game_mode)
         elif user_input == 'm':
             pass
@@ -630,6 +628,7 @@ def print_summary_message(board_size, game_mode, player_name=None):
 
 def battleship_game(board1, board2, ship_stats1, ship_stats2, game_mode, player1, player2, turns_limit):
     """Game logic."""
+    ships_copy = update_ships(ship_stats1)
     BOARD_SIZE = len(board1)
     SPACING = 4
     TABLE_WIDTH = len("-------+------------+------------")
@@ -681,7 +680,7 @@ def battleship_game(board1, board2, ship_stats1, ship_stats2, game_mode, player1
                 print_boards(board1, board2, player1, player2)
                 ships = update_ships(ship_stats2)
                 print_table(ships, TABLE_Y_OFFSET, TABLE2_X_OFFSET, player2['name'])
-                print_summary_message(BOARD_SIZE, game_mode, player1['name'])
+                print_summary_message(BOARD_SIZE, game_mode, ships_copy, player1, player2, turns_limit, player1['name'])
                 continue
             
             clear()
@@ -711,7 +710,7 @@ def battleship_game(board1, board2, ship_stats1, ship_stats2, game_mode, player1
                 print_boards(board1, board2, player1, player2)
                 ships = update_ships(ship_stats2)
                 print_table(ships, TABLE_Y_OFFSET, TABLE2_X_OFFSET, player2['name'])
-                print_summary_message(BOARD_SIZE, game_mode, player2['name'])
+                print_summary_message(BOARD_SIZE, game_mode, ships_copy, player1, player2, turns_limit, player2['name'])
                 continue
             
             if turns_limit > 0:
@@ -758,7 +757,7 @@ def battleship_game(board1, board2, ship_stats1, ship_stats2, game_mode, player1
                 print_boards(board1, board2, player1, player2)
                 ships = update_ships(ship_stats2)
                 print_table(ships, TABLE_Y_OFFSET, TABLE2_X_OFFSET, player2['name'])
-                print_summary_message(BOARD_SIZE, game_mode, player1['name'])
+                print_summary_message(BOARD_SIZE, game_mode, ships_copy, player1, player2, turns_limit, player1['name'])
                 continue
             
             clear()
@@ -775,7 +774,7 @@ def battleship_game(board1, board2, ship_stats1, ship_stats2, game_mode, player1
 
             if is_all_ships_destroyed(board1, ship_stats1):
                 loop = False
-                print_summary_message(BOARD_SIZE, game_mode, player2['name'])
+                print_summary_message(BOARD_SIZE, game_mode, ships_copy, player1, player2, turns_limit, player2['name'])
                 continue
             
             if turns_limit > 0:
@@ -787,7 +786,7 @@ def battleship_game(board1, board2, ship_stats1, ship_stats2, game_mode, player1
         print_boards(board1, board2, player1, player2)
         ships = update_ships(ship_stats2)
         print_table(ships, TABLE_Y_OFFSET, TABLE2_X_OFFSET, player2['name'])
-        print_summary_message(BOARD_SIZE, game_mode)
+        print_summary_message(BOARD_SIZE, game_mode, ships_copy, player1, player2, turns_limit)
 
 def place_ship_horizontally(user_input, board, ships, ship_stats, ship_type, ship_len, col, row):
     board_size = len(board)
