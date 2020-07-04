@@ -20,9 +20,11 @@ def clear():
     system("clear")
     print_logo()
 
-def menu():
-    board_size = 9
-    game_mode = "HUMAN-AI"
+def menu(board_size=None, game_mode=None, player1=None, player2=None):
+    if board_size is None:    
+        board_size = 9
+    if game_mode is None:
+        game_mode = "HUMAN-AI"
     game_mode_dict = {
         "HUMAN-AI": "HUMAN vs. COMPUTER",
         "HUMAN-HUMAN": "HUMAN vs. HUMAN"
@@ -71,7 +73,13 @@ def menu():
             user_input = None
             continue
         elif user_input == "4":
-            return next_menu(board_size, game_mode, turns_limit)
+            board_size, game_mode, ships, player1, player2, turns_limit, goback = next_menu(board_size, game_mode, turns_limit, player1, player2)
+            if goback is True:
+                user_input = None
+                continue
+            else:
+                return board_size, game_mode, ships, player1, player2, turns_limit
+                
             
 
 def battlefield_size():
@@ -162,7 +170,7 @@ def turnslimit(board_size):
         return int(user_input)
 
 
-def next_menu(board_size, game_mode, turns_limit):
+def next_menu(board_size, game_mode, turns_limit, player1=None, player2=None):
     CARRIER = 0
     BATTLESHIP = 1
     CRUISER = 2
@@ -184,10 +192,12 @@ def next_menu(board_size, game_mode, turns_limit):
     user_input = None
     
     if game_mode == "HUMAN-AI":
-        player1 = {
-            'name': 'Player',
-            'color': None
-        }
+        if player1 is None:
+            player1 = {
+                'name': 'Player',
+                'color': None
+            }
+            
         player2 = {
             'name': 'Computer',
             'color': None
@@ -220,18 +230,19 @@ def next_menu(board_size, game_mode, turns_limit):
                 user_input = None
                 continue
             elif user_input == "2":
-                menu()
+                return board_size, game_mode, ships, player1, player2, turns_limit, True
             elif user_input == "3":
-                return board_size, game_mode, ships, player1, player2, turns_limit
+                return board_size, game_mode, ships, player1, player2, turns_limit, False
     elif game_mode == "HUMAN-HUMAN":
-        player1 = {
-            'name': 'Player1',
-            'color': None
-        }
-        player2 = {
-            'name': 'Player2',
-            'color': None
-        }
+        if player1 is None:
+            player1 = {
+                'name': 'Player1',
+                'color': None
+            }
+            player2 = {
+                'name': 'Player2',
+                'color': None
+            }
         while user_input is None:
             clear()
             print(f"1. Player1's name: {player1['name']}")
@@ -265,9 +276,9 @@ def next_menu(board_size, game_mode, turns_limit):
                 user_input = None
                 continue
             elif user_input == "3":
-                menu()
+                return board_size, game_mode, ships, player1, player2, turns_limit, True
             elif user_input == "4":
-                return board_size, game_mode, ships, player1, player2, turns_limit
+                return board_size, game_mode, ships, player1, player2, turns_limit, False
 
 
 def get_player_name():
