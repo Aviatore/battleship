@@ -5,7 +5,7 @@ import random
 import menu
 
 
-AI_MODE = "normal" # if 'god_like' while picking a shot AI takes into account the ship length
+AI_MODE = "normal" # if 'god_like', while picking a shot, AI takes into account the ship length
 MARK_MISS = chr(8729)
 MARK_HIT = "H"
 MARK_SUNK = "S"
