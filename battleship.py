@@ -618,9 +618,8 @@ def print_summary_message(board_size, game_mode, ships, player1, player2, turns_
             user_input = None
         elif user_input == 'y':
             run_game(board_size, game_mode, ships, player1, player2, turns_limit)
-            main(board_size, game_mode)
         elif user_input == 'm':
-            pass
+            main(board_size, game_mode, player1, player2)
         elif user_input in ['quit', 'q']:
             print("Good bye!")
             exit()
@@ -1167,8 +1166,8 @@ def place_ship_loop(board, player, ship_stats, ships):
 
 
 
-def main():
-    board_size, game_mode, ships, player1, player2, turns_limit = menu.menu()
+def main(board_size=None, game_mode=None, player1=None, player2=None):
+    board_size, game_mode, ships, player1, player2, turns_limit = menu.menu(board_size, game_mode, player1, player2)
     run_game(board_size, game_mode, ships, player1, player2, turns_limit)
 
 def run_game(board_size, game_mode, ships, player1, player2, turns_limit):
